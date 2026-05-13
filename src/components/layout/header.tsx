@@ -2,38 +2,37 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Phone, Menu } from "lucide-react";
+import { MessageCircle, Menu } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { openAriana } from "@/lib/ariana";
 import MobileNav from "@/components/layout/mobile-nav";
 
 const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/orthopedic", label: "Orthopedic" },
-  { href: "/neurological", label: "Neurological" },
+  { href: "#conditions", label: "Conditions" },
+  { href: "#experience", label: "Experience" },
+  { href: "#treatments", label: "Treatments" },
+  { href: "#faq", label: "FAQs" },
 ] as const;
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const pathname = usePathname();
-  const isHome = pathname === "/";
 
   useEffect(() => {
     function handleScroll() {
       setIsScrolled(window.scrollY > 10);
-
-      if (isHome) {
-        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-        setScrollProgress(docHeight > 0 ? Math.min(1, window.scrollY / docHeight) : 0);
-      }
+      const docHeight =
+        document.documentElement.scrollHeight - window.innerHeight;
+      setScrollProgress(
+        docHeight > 0 ? Math.min(1, window.scrollY / docHeight) : 0,
+      );
     }
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [isHome]);
+  }, []);
 
   return (
     <>
@@ -45,16 +44,25 @@ export default function Header() {
           "fixed top-0 z-50 w-full transition-all duration-500",
           isScrolled
             ? "bg-white/90 backdrop-blur-lg border-b border-gray-200 shadow-sm"
-            : "bg-transparent"
+            : "bg-transparent",
         )}
       >
+        {/* Scroll progress bar */}
+        <span
+          className="absolute bottom-0 left-0 h-0.5 bg-coral transition-all duration-150"
+          style={{ width: `${scrollProgress * 100}%` }}
+          aria-hidden="true"
+        />
+
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <span className={cn(
-              "font-display text-xl font-bold tracking-tight sm:text-2xl transition-colors",
-              isScrolled ? "text-ocean-deepest" : "text-cream"
-            )}>
+            <span
+              className={cn(
+                "font-display text-xl font-bold tracking-tight sm:text-2xl transition-colors",
+                isScrolled ? "text-ocean-deepest" : "text-cream",
+              )}
+            >
               La Vida{" "}
               <span className="text-coral">Regenerative Medicine</span>
             </span>
@@ -62,35 +70,29 @@ export default function Header() {
 
           {/* Desktop Nav */}
           <nav className="hidden items-center gap-8 md:flex">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={cn(
-                    "relative text-sm font-medium transition-colors",
-                    isActive ? "text-coral" : isScrolled ? "text-gray-600 hover:text-coral" : "text-cream/70 hover:text-coral"
-                  )}
-                >
-                  {link.label}
-                  {isHome && isActive && (
-                    <span
-                      className="absolute -bottom-1 left-0 h-0.5 bg-coral transition-all duration-150"
-                      style={{ width: `${scrollProgress * 100}%` }}
-                    />
-                  )}
-                </Link>
-              );
-            })}
+            {navLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "relative text-sm font-medium transition-colors",
+                  isScrolled
+                    ? "text-gray-600 hover:text-coral"
+                    : "text-cream/70 hover:text-coral",
+                )}
+              >
+                {link.label}
+              </a>
+            ))}
 
-            <a
-              href="tel:+18772732220"
-              className="inline-flex items-center gap-2 rounded-full bg-coral px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-coral-dark"
+            <button
+              type="button"
+              onClick={() => openAriana("menu")}
+              className="inline-flex items-center gap-2 rounded-full bg-coral px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-coral-dark cursor-pointer"
             >
-              <Phone className="h-4 w-4" />
-              (877) 273-2220
-            </a>
+              <MessageCircle className="h-4 w-4" />
+              Talk to Ariana
+            </button>
           </nav>
 
           {/* Mobile Hamburger */}
@@ -99,7 +101,7 @@ export default function Header() {
             onClick={() => setIsMobileNavOpen(true)}
             className={cn(
               "inline-flex items-center justify-center rounded-md p-2 transition-colors hover:text-coral md:hidden",
-              isScrolled ? "text-ocean-deepest" : "text-cream"
+              isScrolled ? "text-ocean-deepest" : "text-cream",
             )}
             aria-label="Open navigation menu"
           >

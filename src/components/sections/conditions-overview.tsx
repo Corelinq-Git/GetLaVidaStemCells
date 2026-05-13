@@ -2,15 +2,14 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ChevronDown, MessageCircle } from "lucide-react";
 import { fadeInUp, staggerContainer, customEase } from "@/lib/animations";
-import Link from "next/link";
+import { openAriana } from "@/lib/ariana";
 
 interface ConditionCategory {
   title: string;
   description: string;
   details: string[];
-  href?: string;
 }
 
 const conditions: ConditionCategory[] = [
@@ -24,7 +23,6 @@ const conditions: ConditionCategory[] = [
       "Lower back & disc degeneration",
       "Hip joint deterioration",
     ],
-    href: "/orthopedic",
   },
   {
     title: "Neurological Conditions",
@@ -36,7 +34,6 @@ const conditions: ConditionCategory[] = [
       "Multiple sclerosis (MS)",
       "Peripheral neuropathy",
     ],
-    href: "/neurological",
   },
   {
     title: "Autoimmune Disorders",
@@ -111,26 +108,14 @@ function ConditionRow({
           {condition.title}
         </h3>
 
-        {/* Expand/Link icons */}
-        <div className="flex items-center gap-3 shrink-0">
-          {condition.href && (
-            <Link
-              href={condition.href}
-              onClick={(e) => e.stopPropagation()}
-              className="hidden md:flex w-10 h-10 rounded-full border border-gray-300 items-center justify-center transition-all hover:border-coral hover:bg-coral/10"
-              aria-label={`Learn more about ${condition.title}`}
-            >
-              <ArrowRight className="h-4 w-4 text-gray-400 transition-all hover:text-coral" />
-            </Link>
-          )}
-          <motion.div
-            animate={{ rotate: isOpen ? 180 : 0 }}
-            transition={{ duration: 0.3, ease: customEase }}
-            className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-300 flex items-center justify-center transition-colors group-hover:border-coral/40"
-          >
-            <ChevronDown className="h-4 w-4 text-gray-400" />
-          </motion.div>
-        </div>
+        {/* Expand icon */}
+        <motion.div
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.3, ease: customEase }}
+          className="w-8 h-8 md:w-10 md:h-10 rounded-full border border-gray-300 flex items-center justify-center transition-colors group-hover:border-coral/40 shrink-0"
+        >
+          <ChevronDown className="h-4 w-4 text-gray-400" />
+        </motion.div>
       </button>
 
       {/* Expandable content */}
@@ -147,7 +132,7 @@ function ConditionRow({
               <p className="text-gray-500 leading-relaxed mb-4">
                 {condition.description}
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-5">
                 {condition.details.map((detail) => (
                   <div key={detail} className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-coral/60 shrink-0" />
@@ -155,15 +140,16 @@ function ConditionRow({
                   </div>
                 ))}
               </div>
-              {condition.href && (
-                <Link
-                  href={condition.href}
-                  className="mt-4 inline-flex items-center gap-2 text-sm text-coral hover:text-coral-light transition-colors"
-                >
-                  Explore treatments
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              )}
+              <button
+                type="button"
+                onClick={() =>
+                  openAriana("menu", `Tell me about ${condition.title}`)
+                }
+                className="inline-flex items-center gap-2 rounded-full bg-coral px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-coral-dark cursor-pointer"
+              >
+                <MessageCircle className="h-4 w-4" />
+                Ask Ariana about this
+              </button>
             </div>
           </motion.div>
         )}
@@ -191,8 +177,11 @@ export default function ConditionsOverview() {
             >
               Conditions We Address
             </h2>
-            <p className="mt-3 text-gray-600 max-w-2xl" style={{ fontSize: "var(--text-body-lg)" }}>
-              Tap any condition to learn more about our treatment approach.
+            <p
+              className="mt-3 text-gray-600 max-w-2xl"
+              style={{ fontSize: "var(--text-body-lg)" }}
+            >
+              Tap any condition to learn more — or ask Ariana directly.
             </p>
           </motion.div>
 

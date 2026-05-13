@@ -69,8 +69,8 @@
   --color-foreground: var(--foreground);
   --color-background: var(--background);
   --font-sans: var(--font-inter);
-  --font-display: var(--font-playfair);
-  --font-heading: var(--font-space-grotesk);
+  --font-display: var(--font-jakarta);
+  --font-heading: var(--font-jakarta);
 }
 
 body {

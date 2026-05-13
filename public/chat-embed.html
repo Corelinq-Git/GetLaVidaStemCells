@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ariana Chat</title>
+    <style>
+      html, body { margin: 0; padding: 0; height: 100%; background: #fff; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <!--
+      Iframe-friendly Retell hosted-chat embed. The agent id and public key are
+      injected as URL query params by the parent widget so we can keep the
+      script tag attributes static at deploy time.
+    -->
+    <script>
+      (function () {
+        const params = new URLSearchParams(window.location.search);
+        const agentId = params.get("agent_id") || "";
+        const publicKey = params.get("public_key") || "";
+        const title = params.get("title") || "La Vida";
+        const botName = params.get("bot_name") || "Ariana";
+        const color = params.get("color") || "#0E2A47";
+
+        if (!agentId) {
+          document.body.innerHTML =
+            '<p style="font:14px/1.4 system-ui;color:#666;padding:24px;">Chat agent not configured. Please set NEXT_PUBLIC_RETELL_CHAT_AGENT_ID.</p>';
+          return;
+        }
+
+        const s = document.createElement("script");
+        s.id = "retell-widget";
+        s.src = "https://dashboard.retellai.com/retell-widget.js";
+        s.type = "module";
+        s.setAttribute("data-agent-id", agentId);
+        if (publicKey) s.setAttribute("data-public-key", publicKey);
+        s.setAttribute("data-title", title);
+        s.setAttribute("data-bot-name", botName);
+        s.setAttribute("data-color", color);
+        s.setAttribute("data-auto-open", "true");
+        document.body.appendChild(s);
+      })();
+
+      // Patch Retell's Shadow DOM so the chat window fills our iframe and
+      // we don't see double chrome.
+      (function () {
+        const SHADOW_CSS = `
+          #retell-fab { display: none !important; }
+          .retell-header { display: none !important; }
+          #retell-ai-message-modal { display: none !important; }
+          .retell-chat-window {
+            position: fixed !important;
+            inset: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: 100vw !important;
+            max-height: 100vh !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+            border: 0 !important;
+          }
+          .retell-powered-by { font-size: 10px !important; opacity: 0.4 !important; padding: 4px 0 !important; }
+        `;
+
+        const start = Date.now();
+        const tick = setInterval(function () {
+          const host = Array.from(document.body.querySelectorAll("div"))
+            .find(function (el) {
+              return el.shadowRoot && el.shadowRoot.querySelector(".retell-chat-window");
+            });
+          if (host) {
+            const style = document.createElement("style");
+            style.textContent = SHADOW_CSS;
+            host.shadowRoot.appendChild(style);
+            clearInterval(tick);
+          } else if (Date.now() - start > 10000) {
+            clearInterval(tick);
+          }
+        }, 100);
+      })();
+    </script>
+  </body>
+</html>

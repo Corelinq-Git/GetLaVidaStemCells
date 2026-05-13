@@ -43,3 +43,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local screenshots & image-gen artifacts
+*.png.bak
+*.webp.bak
+/public/images/ariana-hires.png
+/broken-*.png
+/fixed-*.png
+/modern-*.png
+/shitty-*.png
+/treatments-megamenu.png

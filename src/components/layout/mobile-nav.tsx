@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import Link from "next/link";
-import { Phone, X } from "lucide-react";
+import { MessageCircle, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { openAriana } from "@/lib/ariana";
 
 const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/orthopedic", label: "Orthopedic" },
-  { href: "/neurological", label: "Neurological" },
+  { href: "#conditions", label: "Conditions" },
+  { href: "#experience", label: "Experience" },
+  { href: "#treatments", label: "Treatments" },
+  { href: "#faq", label: "FAQs" },
 ] as const;
 
 interface MobileNavProps {
@@ -29,7 +30,7 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
 
       if (e.key === "Tab" && panelRef.current) {
         const focusable = panelRef.current.querySelectorAll<HTMLElement>(
-          'a[href], button, [tabindex]:not([tabindex="-1"])'
+          'a[href], button, [tabindex]:not([tabindex="-1"])',
         );
         const first = focusable[0];
         const last = focusable[focusable.length - 1];
@@ -43,7 +44,7 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
         }
       }
     },
-    [onClose]
+    [onClose],
   );
 
   useEffect(() => {
@@ -97,25 +98,28 @@ export default function MobileNav({ isOpen, onClose }: MobileNavProps) {
             {/* Nav Links */}
             <nav className="flex flex-1 flex-col items-center justify-center gap-8">
               {navLinks.map((link) => (
-                <Link
+                <a
                   key={link.href}
                   href={link.href}
                   onClick={onClose}
                   className="font-display text-2xl font-semibold text-cream transition-colors hover:text-coral"
                 >
                   {link.label}
-                </Link>
+                </a>
               ))}
 
-              {/* Phone CTA */}
-              <a
-                href="tel:+18772732220"
-                onClick={onClose}
-                className="mt-4 inline-flex items-center gap-2 rounded-full bg-coral px-6 py-3 text-lg font-semibold text-white transition-colors hover:bg-coral-dark"
+              {/* Ariana CTA */}
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  openAriana("menu");
+                }}
+                className="mt-4 inline-flex items-center gap-2 rounded-full bg-coral px-6 py-3 text-lg font-semibold text-white transition-colors hover:bg-coral-dark cursor-pointer"
               >
-                <Phone className="h-5 w-5" />
-                (877) 273-2220
-              </a>
+                <MessageCircle className="h-5 w-5" />
+                Talk to Ariana
+              </button>
             </nav>
           </motion.div>
         </>
