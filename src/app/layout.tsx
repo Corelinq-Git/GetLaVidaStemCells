@@ -52,7 +52,7 @@ const jsonLd = {
   name: "La Vida Regenerative Medicine",
   description:
     "Stem cell therapy clinic in Punta Cana, Dominican Republic offering regenerative treatments.",
-  telephone: "+1-877-273-2220",
+  telephone: "+1-740-547-0921",
   email: "care@lavidastemcells.com",
   address: {
     "@type": "PostalAddress",

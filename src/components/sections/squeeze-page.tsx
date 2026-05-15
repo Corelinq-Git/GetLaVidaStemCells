@@ -152,11 +152,11 @@ export default function SqueezePage() {
           className="flex items-center gap-3"
         >
           <a
-            href="tel:+18772732220"
+            href="tel:+17405470921"
             className="hidden md:inline-flex items-center gap-2 text-sm font-semibold text-cream hover:text-seafoam transition-colors tracking-wide"
           >
             <PhoneCall className="h-4 w-4 text-seafoam" />
-            (877) 273-2220
+            (740) 547-0921
           </a>
           <div className="hidden sm:flex items-center gap-2 rounded-full bg-cream/10 backdrop-blur-md border border-cream/15 px-3 py-1.5">
             <Sparkles className="h-3.5 w-3.5 text-seafoam" />
@@ -371,8 +371,8 @@ function ConfirmationCard({ phone }: { phone: string }) {
       </p>
       <p className="mt-4 text-center text-xs text-gray-400">
         Didn&apos;t get the call?{" "}
-        <a href="tel:+18772732220" className="text-ocean font-medium hover:underline">
-          Call us at (877) 273-2220
+        <a href="tel:+17405470921" className="text-ocean font-medium hover:underline">
+          Call us at (740) 547-0921
         </a>
       </p>
     </motion.div>
