@@ -14,22 +14,58 @@ const leadSchema = z.object({
   utm_content: z.string().optional(),
 });
 
+/**
+ * Split "Jane Doe" into { first_name: "Jane", last_name: "Doe" }.
+ * Single-word names go entirely into first_name.
+ */
+function splitName(fullName: string): { first_name: string; last_name?: string } {
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length === 1) return { first_name: parts[0] };
+  return { first_name: parts[0], last_name: parts.slice(1).join(" ") };
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const data = leadSchema.parse(body);
 
     const webhookUrl = process.env.LEAD_WEBHOOK_URL;
+    const orgId = process.env.LEAD_CAPTURE_ORG_ID;
 
     if (webhookUrl) {
+      // CoreLinq's /api/public/leads/capture requires org_id. If a target
+      // webhook is configured but org_id isn't, fall back to forwarding
+      // the raw payload so we don't silently drop the lead.
+      const isCoreLinq = webhookUrl.includes("/api/public/leads/capture");
+
+      const payload = isCoreLinq && orgId
+        ? {
+            ...splitName(data.fullName),
+            email: data.email,
+            phone: data.phone,
+            source: "lavida-landing-page",
+            org_id: orgId,
+            metadata: {
+              condition: data.condition,
+              referral_source: data.referralSource,
+              utm_source: data.utm_source,
+              utm_medium: data.utm_medium,
+              utm_campaign: data.utm_campaign,
+              utm_term: data.utm_term,
+              utm_content: data.utm_content,
+              submitted_at: new Date().toISOString(),
+            },
+          }
+        : {
+            ...data,
+            source: "lavida-landing-page",
+            timestamp: new Date().toISOString(),
+          };
+
       const webhookResponse = await fetch(webhookUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...data,
-          source: "lavida-landing-page",
-          timestamp: new Date().toISOString(),
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!webhookResponse.ok) {
