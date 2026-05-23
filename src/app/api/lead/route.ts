@@ -2,10 +2,14 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const leadSchema = z.object({
-  fullName: z.string().min(1),
-  email: z.email(),
+  fullName: z.string().optional(),
+  email: z.email().optional().or(z.literal("")),
   phone: z.string().min(7),
-  condition: z.string().min(1),
+  condition: z.string().optional(),
+  painLevel: z.string().optional(),
+  timeline: z.string().optional(),
+  contactPreference: z.enum(["zoom", "phone"]).optional(),
+  pageSource: z.string().optional(),
   referralSource: z.string().optional(),
   utm_source: z.string().optional(),
   utm_medium: z.string().optional(),
@@ -18,7 +22,8 @@ const leadSchema = z.object({
  * Split "Jane Doe" into { first_name: "Jane", last_name: "Doe" }.
  * Single-word names go entirely into first_name.
  */
-function splitName(fullName: string): { first_name: string; last_name?: string } {
+function splitName(fullName?: string): { first_name?: string; last_name?: string } {
+  if (!fullName || !fullName.trim()) return {};
   const parts = fullName.trim().split(/\s+/);
   if (parts.length === 1) return { first_name: parts[0] };
   return { first_name: parts[0], last_name: parts.slice(1).join(" ") };
@@ -47,6 +52,10 @@ export async function POST(request: Request) {
             org_id: orgId,
             metadata: {
               condition: data.condition,
+              pain_level: data.painLevel,
+              timeline: data.timeline,
+              contact_preference: data.contactPreference,
+              page_source: data.pageSource,
               referral_source: data.referralSource,
               utm_source: data.utm_source,
               utm_medium: data.utm_medium,

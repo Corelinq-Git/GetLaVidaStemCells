@@ -11,6 +11,8 @@ import {
   Mail,
   CheckCircle2,
   Sparkles,
+  Award,
+  Target,
   Lightbulb,
 } from "lucide-react";
 
@@ -34,43 +36,88 @@ function InstagramIcon({ className }: { className?: string }) {
 }
 import { openAriana } from "@/lib/ariana";
 
-export default function SqueezePage() {
-  const [phone, setPhone] = useState("");
+interface QualificationPageProps {
+  imageSrc: string;
+  imageAlt: string;
+  imageObjectClass?: string;
+  headline: string;
+  subCopy: string;
+  pageSource: string;
+  tile4: {
+    iconName: "award" | "target" | "lightbulb";
+    title: string;
+    subtitle: string;
+  };
+}
+
+type ContactPreference = "zoom" | "phone";
+type FormStatus = "idle" | "loading" | "sent" | "error";
+
+export default function QualificationPage({
+  imageSrc,
+  imageAlt,
+  imageObjectClass = "object-center",
+  headline,
+  subCopy,
+  pageSource,
+  tile4,
+}: QualificationPageProps) {
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "sent" | "error">("idle");
+  const [condition, setCondition] = useState("");
+  const [painLevel, setPainLevel] = useState("");
+  const [timeline, setTimeline] = useState("");
+  const [contactPreference, setContactPreference] =
+    useState<ContactPreference | "">("phone");
+  const [status, setStatus] = useState<FormStatus>("idle");
   const [error, setError] = useState<string | null>(null);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
-    if (!phone) return;
+    if (
+      !name ||
+      !phone ||
+      !email ||
+      !condition ||
+      !painLevel ||
+      !timeline ||
+      !contactPreference
+    ) {
+      setError("Please complete all fields.");
+      return;
+    }
     setStatus("loading");
     setError(null);
 
-    // Fire-and-forget lead capture to CoreLinq. Best-effort — failure here must
-    // not block the user from getting their Ariana callback.
-    fetch("/api/lead", {
+    // Fire-and-forget Retell callback — triggers Ariana to call within ~60s.
+    // Best-effort: failure here must not block the lead capture / confirmation.
+    fetch("/api/retell/callback", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        phone,
-        ...(name.trim() ? { fullName: name.trim() } : {}),
-        ...(email.trim() ? { email: email.trim() } : {}),
-        pageSource: "squeeze-home",
-      }),
+      body: JSON.stringify({ phone, name }),
     }).catch((err) => {
-      console.error("Lead capture failed (non-blocking):", err);
+      console.error("Retell callback failed (non-blocking):", err);
     });
 
     try {
-      const res = await fetch("/api/retell/callback", {
+      const res = await fetch("/api/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, name }),
+        body: JSON.stringify({
+          fullName: name,
+          phone,
+          email,
+          condition,
+          painLevel,
+          timeline,
+          contactPreference,
+          pageSource,
+        }),
       });
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to request callback");
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to submit request");
       }
       setStatus("sent");
     } catch (err) {
@@ -81,7 +128,7 @@ export default function SqueezePage() {
 
   return (
     <section className="relative h-svh w-full overflow-hidden bg-ocean-deepest text-cream flex flex-col">
-      {/* Layered blue base — deepest navy → ocean → ocean-light wash */}
+      {/* Layered blue base */}
       <div
         className="absolute inset-0 z-0"
         style={{
@@ -90,9 +137,8 @@ export default function SqueezePage() {
         }}
       />
 
-      {/* Right-side portrait — full-bleed on right, fades into dark on left */}
+      {/* Right-side portrait */}
       <div className="absolute inset-0 z-0">
-        {/* Cool ambient color wash — ocean + seafoam (was coral) */}
         <div
           className="absolute inset-0"
           style={{
@@ -101,7 +147,6 @@ export default function SqueezePage() {
           }}
         />
 
-        {/* Portrait */}
         <motion.div
           initial={{ opacity: 0, scale: 1.04 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -109,11 +154,15 @@ export default function SqueezePage() {
           className="absolute inset-y-0 right-0 w-full md:w-[62%] lg:w-[58%]"
         >
           <img
-            src="/images/ariana.webp"
-            alt="Ariana, La Vida's AI concierge"
-            className="w-full h-full object-cover object-[60%_center] md:object-[center_15%]"
+            src={imageSrc}
+            alt={imageAlt}
+            className={`w-full h-full object-cover ${imageObjectClass}`}
           />
-          {/* Left-edge gradient mask so portrait melts into dark bg */}
+          {/* Uniform dark scrim — pushes the image into the background so the form stays the focal point */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ background: "rgba(6,47,63,0.35)" }}
+          />
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
@@ -121,7 +170,6 @@ export default function SqueezePage() {
                 "linear-gradient(90deg, rgba(6,47,63,0.92) 0%, rgba(6,47,63,0.65) 20%, rgba(6,47,63,0.20) 45%, transparent 70%)",
             }}
           />
-          {/* Subtle vignette + bottom fade */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
@@ -131,7 +179,6 @@ export default function SqueezePage() {
           />
         </motion.div>
 
-        {/* Soft grain */}
         <div
           className="absolute inset-0 opacity-[0.04] mix-blend-overlay pointer-events-none"
           style={{
@@ -163,7 +210,6 @@ export default function SqueezePage() {
           </span>
         </motion.a>
 
-        {/* Trust badge + phone — top-right cluster */}
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -193,43 +239,52 @@ export default function SqueezePage() {
 
       {/* Main content area */}
       <div className="relative z-10 flex-1 min-h-0 flex items-start pt-2 md:pt-4 px-5 md:px-10 lg:px-16 overflow-y-auto">
-        <div className="w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8">
-          {/* Left column — the squeeze card */}
+        <div className="w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 pb-12">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4, ease: [0.19, 1, 0.22, 1] }}
-            className="md:col-span-6 lg:col-span-5 flex flex-col gap-5"
+            className="md:col-span-7 lg:col-span-7 flex flex-col gap-5"
           >
-            {status === "sent" ? <ConfirmationCard phone={phone} /> : (
-              <SqueezeCard
-                phone={phone}
-                setPhone={setPhone}
+            {status === "sent" ? (
+              <ConfirmationCard contactPreference={contactPreference || "zoom"} />
+            ) : (
+              <QualificationCard
+                headline={headline}
+                subCopy={subCopy}
                 name={name}
                 setName={setName}
+                phone={phone}
+                setPhone={setPhone}
                 email={email}
                 setEmail={setEmail}
+                condition={condition}
+                setCondition={setCondition}
+                painLevel={painLevel}
+                setPainLevel={setPainLevel}
+                timeline={timeline}
+                setTimeline={setTimeline}
+                contactPreference={contactPreference}
+                setContactPreference={setContactPreference}
                 status={status}
                 error={error}
                 onSubmit={submit}
               />
             )}
 
-            {/* Social proof rail — SeedProd "Recent Episodes" pattern */}
-</motion.div>
+          </motion.div>
 
-          {/* Right column — intentional empty space; portrait lives in bg */}
-          <div className="hidden md:block md:col-span-6 lg:col-span-7" aria-hidden="true" />
+          <div className="hidden md:block md:col-span-5 lg:col-span-5" aria-hidden="true" />
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 1.0, ease: [0.19, 1, 0.22, 1] }}
-            className="md:col-span-12 grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2"
+            transition={{ duration: 0.8, delay: 0.9, ease: [0.19, 1, 0.22, 1] }}
+            className="md:col-span-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-2 pr-20 md:pr-24 lg:pr-28"
           >
             <ProofRow
               icon={<Clock className="h-4 w-4" />}
-              title="Average call: 5 minutes"
-              meta="Qualification + booking"
+              title="Same-week consults available"
+              meta="Zoom or phone, Mon–Sat 9am–7pm"
             />
             <ProofRow
               icon={<ShieldCheck className="h-4 w-4" />}
@@ -242,15 +297,19 @@ export default function SqueezePage() {
               meta="Per Dose"
             />
             <ProofRow
-              icon={<Lightbulb className="h-4 w-4" />}
-              title="Stem Cell Innovation Redefined"
-              meta="Next-generation regenerative care"
+              icon={
+                tile4.iconName === "award" ? <Award className="h-4 w-4" /> :
+                tile4.iconName === "target" ? <Target className="h-4 w-4" /> :
+                <Lightbulb className="h-4 w-4" />
+              }
+              title={tile4.title}
+              meta={tile4.subtitle}
             />
           </motion.div>
         </div>
       </div>
 
-      {/* Bottom utility bar — compliance + minimal socials. Phone moved to top header to keep it clear of the chat widget. */}
+      {/* Bottom utility bar */}
       <div className="absolute bottom-0 left-0 right-0 z-20 px-5 md:px-10 py-4 flex items-center justify-between gap-4 pr-24 md:pr-28">
         <p className="text-[10px] md:text-[11px] text-cream/40 max-w-2xl leading-tight tracking-wide">
           Not FDA-approved. Results may vary. Consult your physician.
@@ -280,102 +339,189 @@ export default function SqueezePage() {
 
 // — Card components —
 
-interface SqueezeCardProps {
-  phone: string;
-  setPhone: (v: string) => void;
+interface QualificationCardProps {
+  headline: string;
+  subCopy: string;
   name: string;
   setName: (v: string) => void;
+  phone: string;
+  setPhone: (v: string) => void;
   email: string;
   setEmail: (v: string) => void;
-  status: "idle" | "loading" | "sent" | "error";
+  condition: string;
+  setCondition: (v: string) => void;
+  painLevel: string;
+  setPainLevel: (v: string) => void;
+  timeline: string;
+  setTimeline: (v: string) => void;
+  contactPreference: ContactPreference | "";
+  setContactPreference: (v: ContactPreference) => void;
+  status: FormStatus;
   error: string | null;
   onSubmit: (e: FormEvent) => void;
 }
 
-function SqueezeCard({ phone, setPhone, name, setName, email, setEmail, status, error, onSubmit }: SqueezeCardProps) {
+function QualificationCard({
+  headline,
+  subCopy,
+  name,
+  setName,
+  phone,
+  setPhone,
+  email,
+  setEmail,
+  condition,
+  setCondition,
+  painLevel,
+  setPainLevel,
+  timeline,
+  setTimeline,
+  contactPreference,
+  setContactPreference,
+  status,
+  error,
+  onSubmit,
+}: QualificationCardProps) {
+  const inputClass =
+    "w-full px-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean transition-colors";
+
   return (
     <div className="rounded-2xl bg-white text-ocean-deepest p-6 md:p-7 shadow-2xl shadow-black/30 border border-white/40">
-      {/* Eyebrow */}
-      <p className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.22em] text-ocean">
-        <span className="w-1.5 h-1.5 rounded-full bg-ocean animate-pulse" />
-        Free 5-min qualification
-      </p>
-
-      {/* Headline — concrete, outcome-stated */}
-      <h1 className="mt-3 font-display font-bold leading-[1.04] tracking-[-0.025em] text-[clamp(1.85rem,3.2vw,2.6rem)]">
-        Stop guessing.{" "}
-        <span className="text-ocean">Get a real plan</span> in 5 minutes.
+      <h1 className="font-display font-bold leading-[1.1] tracking-[-0.02em] text-[clamp(1.5rem,2.8vw,2.1rem)] text-ocean">
+        {headline}
       </h1>
 
-      {/* Sub — explicit objective */}
       <p className="mt-3 text-gray-600 leading-relaxed text-sm md:text-base">
-        Drop your number. Ariana - our AI concierge - will call you in under
-        60 seconds, qualify your case, and book a private consult.
+        {subCopy}
       </p>
 
-      {/* Form */}
       <form onSubmit={onSubmit} className="mt-5 space-y-3">
-        <div>
-          <label htmlFor="sq-name" className="sr-only">Your name</label>
-          <input
-            id="sq-name"
-            type="text"
-            autoComplete="given-name"
-            placeholder="Your first name (optional)"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean transition-colors"
-          />
+        {/* Row 1 — Name + Phone */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="cn-name" className="sr-only">Your name</label>
+            <input
+              id="cn-name"
+              type="text"
+              autoComplete="name"
+              placeholder="Your full name"
+              required
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label htmlFor="cn-phone" className="sr-only">Phone number</label>
+            <input
+              id="cn-phone"
+              type="tel"
+              autoComplete="tel"
+              placeholder="Phone number"
+              required
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className={inputClass}
+            />
+          </div>
         </div>
-        <div>
-          <label htmlFor="sq-phone" className="sr-only">Phone number</label>
-          <input
-            id="sq-phone"
-            type="tel"
-            autoComplete="tel"
-            placeholder="Phone number"
-            required
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 text-base font-medium text-ocean-deepest placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean transition-colors"
-          />
+
+        {/* Row 2 — Email + Condition */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="cn-email" className="sr-only">Email</label>
+            <input
+              id="cn-email"
+              type="email"
+              autoComplete="email"
+              placeholder="Email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <label htmlFor="cn-condition" className="sr-only">Condition or problem</label>
+            <select
+              id="cn-condition"
+              required
+              value={condition}
+              onChange={(e) => setCondition(e.target.value)}
+              className={inputClass}
+            >
+              <option value="" disabled>Condition / problem</option>
+              <option value="Orthopedic">Orthopedic (joints, sports injury, back/neck)</option>
+              <option value="Neurological">Neurological (Parkinson's, MS, neuropathy, stroke)</option>
+              <option value="Anti-aging / wellness">Anti-aging / wellness</option>
+              <option value="Autoimmune">Autoimmune (lupus, RA, Crohn's)</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
         </div>
-        <div>
-          <label htmlFor="sq-email" className="sr-only">Email</label>
-          <input
-            id="sq-email"
-            type="email"
-            autoComplete="email"
-            placeholder="Email (optional)"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean transition-colors"
-          />
+
+        {/* Row 3 — Pain Level + Timeline */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="cn-pain" className="sr-only">Pain level</label>
+            <select
+              id="cn-pain"
+              required
+              value={painLevel}
+              onChange={(e) => setPainLevel(e.target.value)}
+              className={inputClass}
+            >
+              <option value="" disabled>Pain level (0 = none, 10 = severe)</option>
+              {Array.from({ length: 11 }, (_, i) => (
+                <option key={i} value={String(i)}>
+                  {i}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="cn-timeline" className="sr-only">Ideal timeline</label>
+            <select
+              id="cn-timeline"
+              required
+              value={timeline}
+              onChange={(e) => setTimeline(e.target.value)}
+              className={inputClass}
+            >
+              <option value="" disabled>Ideal timeline</option>
+              <option value="Within 30 days">Within 30 days</option>
+              <option value="1-3 months">1–3 months</option>
+              <option value="3-6 months">3–6 months</option>
+              <option value="Just researching">Just researching</option>
+            </select>
+          </div>
         </div>
 
         {error && <p className="text-xs text-red-600">{error}</p>}
 
         <motion.button
           type="submit"
-          disabled={!phone || status === "loading"}
+          disabled={status === "loading"}
           whileHover={status !== "loading" ? { scale: 1.01, y: -1 } : undefined}
           whileTap={status !== "loading" ? { scale: 0.99 } : undefined}
           transition={{ type: "spring", stiffness: 400, damping: 25 }}
           className="relative w-full py-4 rounded-xl bg-ocean text-white font-bold text-base shadow-lg shadow-ocean/40 hover:bg-ocean-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer overflow-hidden group"
         >
           <span className="absolute -inset-1 rounded-xl bg-ocean-light/60 blur-xl opacity-50 group-hover:opacity-70 transition-opacity -z-10" aria-hidden="true" />
-          <span className="inline-flex items-center gap-2">
-            <PhoneCall className="h-5 w-5" />
-            {status === "loading" ? "Calling you…" : "Call me now — free"}
+          <span className="inline-flex flex-col items-center leading-tight gap-0.5">
+            <span>{status === "loading" ? "Sending…" : "Request my consultation"}</span>
+            {status !== "loading" && (
+              <span className="text-[11px] font-normal opacity-80">
+                we&apos;ll contact you by phone
+              </span>
+            )}
           </span>
         </motion.button>
 
-        {/* Risk reversal */}
         <p className="text-[11px] text-gray-500 text-center leading-relaxed">
-          We dial within 60 seconds. No spam. No obligation. Cancel anytime.
+          We dial within 60 seconds. No Spam. No Obligation. Cancel anytime.
         </p>
 
-        {/* Secondary action — chat as alternative */}
         <button
           type="button"
           onClick={() => openAriana("chat")}
@@ -389,7 +535,11 @@ function SqueezeCard({ phone, setPhone, name, setName, email, setEmail, status, 
   );
 }
 
-function ConfirmationCard({ phone }: { phone: string }) {
+function ConfirmationCard({
+  contactPreference,
+}: {
+  contactPreference: ContactPreference;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -401,15 +551,20 @@ function ConfirmationCard({ phone }: { phone: string }) {
         <CheckCircle2 className="h-7 w-7 text-seafoam-dark" />
       </div>
       <h2 className="mt-4 text-center font-display font-medium text-2xl md:text-3xl tracking-tight">
-        Ariana is calling you now.
+        Thanks — we've got your request.
       </h2>
-      <p className="mt-3 text-center text-gray-600 text-sm leading-relaxed">
-        Watch your phone — we&apos;re dialing{" "}
-        <span className="font-semibold text-ocean-deepest">{phone}</span>{" "}
-        within 60 seconds.
+      <p className="mt-4 text-gray-700 text-sm md:text-base leading-relaxed">
+        We prefer Zoom when possible, but we understand some clients prefer
+        phone calls. You will receive text and email reminders 1 day, 1 hour,
+        and 5 minutes before your{" "}
+        {contactPreference === "zoom" ? "Zoom" : "phone"} appointment. If you
+        need to reschedule, please let us know as soon as possible.
       </p>
-      <p className="mt-4 text-center text-xs text-gray-400">
-        Didn&apos;t get the call?{" "}
+      <p className="mt-3 text-gray-700 text-sm md:text-base leading-relaxed">
+        Appointments are available Monday–Saturday, 9:00 AM–7:00 PM.
+      </p>
+      <p className="mt-5 text-center text-xs text-gray-400">
+        Questions in the meantime?{" "}
         <a href="tel:+17405470921" className="text-ocean font-medium hover:underline">
           Call us at (740) 547-0921
         </a>
@@ -426,15 +581,15 @@ interface ProofRowProps {
 
 function ProofRow({ icon, title, meta }: ProofRowProps) {
   return (
-    <div className="flex items-center gap-3 rounded-xl bg-cream/8 backdrop-blur-md border border-cream/15 px-4 py-3">
+    <div className="flex flex-row sm:flex-col items-center sm:items-start gap-3 sm:gap-2 rounded-xl bg-cream/8 backdrop-blur-md border border-cream/15 px-4 py-3">
       <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-seafoam/15 text-seafoam shrink-0">
         {icon}
       </span>
       <div className="min-w-0">
-        <p className="text-sm font-semibold text-cream leading-tight truncate">
+        <p className="text-sm font-semibold text-cream leading-tight">
           {title}
         </p>
-        <p className="text-xs text-cream/55 leading-tight truncate tracking-wide">
+        <p className="text-xs text-cream/55 leading-tight tracking-wide">
           {meta}
         </p>
       </div>
