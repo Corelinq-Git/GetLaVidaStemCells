@@ -66,8 +66,6 @@ export default function QualificationPage({
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [condition, setCondition] = useState("");
-  const [painLevel, setPainLevel] = useState("");
-  const [timeline, setTimeline] = useState("");
   const [contactPreference, setContactPreference] =
     useState<ContactPreference | "">("phone");
   const [status, setStatus] = useState<FormStatus>("idle");
@@ -80,8 +78,6 @@ export default function QualificationPage({
       !phone ||
       !email ||
       !condition ||
-      !painLevel ||
-      !timeline ||
       !contactPreference
     ) {
       setError("Please complete all fields.");
@@ -109,8 +105,6 @@ export default function QualificationPage({
           phone,
           email,
           condition,
-          painLevel,
-          timeline,
           contactPreference,
           pageSource,
         }),
@@ -260,10 +254,6 @@ export default function QualificationPage({
                 setEmail={setEmail}
                 condition={condition}
                 setCondition={setCondition}
-                painLevel={painLevel}
-                setPainLevel={setPainLevel}
-                timeline={timeline}
-                setTimeline={setTimeline}
                 contactPreference={contactPreference}
                 setContactPreference={setContactPreference}
                 status={status}
@@ -350,10 +340,6 @@ interface QualificationCardProps {
   setEmail: (v: string) => void;
   condition: string;
   setCondition: (v: string) => void;
-  painLevel: string;
-  setPainLevel: (v: string) => void;
-  timeline: string;
-  setTimeline: (v: string) => void;
   contactPreference: ContactPreference | "";
   setContactPreference: (v: ContactPreference) => void;
   status: FormStatus;
@@ -372,10 +358,6 @@ function QualificationCard({
   setEmail,
   condition,
   setCondition,
-  painLevel,
-  setPainLevel,
-  timeline,
-  setTimeline,
   contactPreference,
   setContactPreference,
   status,
@@ -426,7 +408,7 @@ function QualificationCard({
           </div>
         </div>
 
-        {/* Row 2 — Email + Condition */}
+        {/* Row 2 — Email + Condition Category */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label htmlFor="cn-email" className="sr-only">Email</label>
@@ -442,7 +424,7 @@ function QualificationCard({
             />
           </div>
           <div>
-            <label htmlFor="cn-condition" className="sr-only">Condition or problem</label>
+            <label htmlFor="cn-condition" className="sr-only">Condition Category</label>
             <select
               id="cn-condition"
               required
@@ -450,49 +432,9 @@ function QualificationCard({
               onChange={(e) => setCondition(e.target.value)}
               className={inputClass}
             >
-              <option value="" disabled>Condition / problem</option>
-              <option value="Orthopedic">Orthopedic (joints, sports injury, back/neck)</option>
-              <option value="Neurological">Neurological (Parkinson's, MS, neuropathy, stroke)</option>
-              <option value="Anti-aging / wellness">Anti-aging / wellness</option>
-              <option value="Autoimmune">Autoimmune (lupus, RA, Crohn's)</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Row 3 — Pain Level + Timeline */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label htmlFor="cn-pain" className="sr-only">Pain level</label>
-            <select
-              id="cn-pain"
-              required
-              value={painLevel}
-              onChange={(e) => setPainLevel(e.target.value)}
-              className={inputClass}
-            >
-              <option value="" disabled>Pain level (0 = none, 10 = severe)</option>
-              {Array.from({ length: 11 }, (_, i) => (
-                <option key={i} value={String(i)}>
-                  {i}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="cn-timeline" className="sr-only">Ideal timeline</label>
-            <select
-              id="cn-timeline"
-              required
-              value={timeline}
-              onChange={(e) => setTimeline(e.target.value)}
-              className={inputClass}
-            >
-              <option value="" disabled>Ideal timeline</option>
-              <option value="Within 30 days">Within 30 days</option>
-              <option value="1-3 months">1–3 months</option>
-              <option value="3-6 months">3–6 months</option>
-              <option value="Just researching">Just researching</option>
+              <option value="" disabled>Condition Category</option>
+              <option value="Musculoskeletal">Musculoskeletal</option>
+              <option value="Autoimmune">Autoimmune</option>
             </select>
           </div>
         </div>

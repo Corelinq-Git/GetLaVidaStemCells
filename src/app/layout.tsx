@@ -23,7 +23,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: {
+  metadataBase: new URL('https://getlavidastemcells.com'),title: {
     default: "La Vida Regenerative Medicine | Stem Cell Therapy in Punta Cana",
     template: "%s | La Vida Regenerative Medicine",
   },
