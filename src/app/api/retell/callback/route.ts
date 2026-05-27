@@ -44,6 +44,12 @@ export async function POST(request: Request) {
       );
     }
     console.error("Retell callback error:", error);
-    return NextResponse.json({ error: "Failed to initiate call" }, { status: 500 });
+    // DEBUG MODE: surface the actual error so we can diagnose. Remove the detail
+    // field once Retell is fully working.
+    const detail = error instanceof Error ? error.message : String(error);
+    return NextResponse.json(
+      { error: "Failed to initiate call", detail },
+      { status: 500 }
+    );
   }
 }

@@ -25,7 +25,7 @@ export default function ConsultationRoute() {
       subCopy="Every patient deserves a tailored approach to care. Tell us about your condition and our team will prepare a personalized path toward relief, recovery, and long-term wellness."
       tile4={{
         iconName: "award",
-        title: "Premium Care. Exceptional Value.",
+        title: "Premium Care. Exceptional Value: We Treat Most Conditions",
         subtitle: "Concierge service, transparent pricing",
       }}
     />

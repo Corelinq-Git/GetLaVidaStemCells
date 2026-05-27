@@ -66,6 +66,8 @@ export default function QualificationPage({
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [condition, setCondition] = useState("");
+  const [painLevel, setPainLevel] = useState("");
+  const [timeline, setTimeline] = useState("");
   const [contactPreference, setContactPreference] =
     useState<ContactPreference | "">("phone");
   const [status, setStatus] = useState<FormStatus>("idle");
@@ -78,6 +80,8 @@ export default function QualificationPage({
       !phone ||
       !email ||
       !condition ||
+      !painLevel ||
+      !timeline ||
       !contactPreference
     ) {
       setError("Please complete all fields.");
@@ -105,6 +109,8 @@ export default function QualificationPage({
           phone,
           email,
           condition,
+          painLevel,
+          timeline,
           contactPreference,
           pageSource,
         }),
@@ -212,10 +218,15 @@ export default function QualificationPage({
         >
           <a
             href="tel:+17405470921"
-            className="hidden md:inline-flex items-center gap-2 text-sm font-semibold text-cream hover:text-seafoam transition-colors tracking-wide [text-shadow:_0_1px_3px_rgba(0,0,0,0.7)]"
+            className="hidden md:flex flex-col items-end leading-tight text-cream hover:text-seafoam transition-colors"
           >
-            <PhoneCall className="h-4 w-4 text-seafoam" />
-            (740) 547-0921
+            <span className="inline-flex items-center gap-2 text-sm font-semibold tracking-wide [text-shadow:_0_1px_3px_rgba(0,0,0,0.7)]">
+              <PhoneCall className="h-4 w-4 text-seafoam" />
+              (740) 547-0921
+            </span>
+            <span className="text-[10px] uppercase tracking-[0.18em] text-cream font-semibold [text-shadow:_0_1px_3px_rgba(0,0,0,0.85)] mt-0.5">
+              Call 24/7
+            </span>
           </a>
           <div className="hidden sm:flex items-center gap-2 rounded-full bg-cream/10 backdrop-blur-md border border-cream/15 px-3 py-1.5">
             <Sparkles className="h-3.5 w-3.5 text-seafoam" />
@@ -241,7 +252,7 @@ export default function QualificationPage({
             className="md:col-span-7 lg:col-span-7 flex flex-col gap-5"
           >
             {status === "sent" ? (
-              <ConfirmationCard contactPreference={contactPreference || "zoom"} />
+              <ConfirmationCard />
             ) : (
               <QualificationCard
                 headline={headline}
@@ -254,6 +265,10 @@ export default function QualificationPage({
                 setEmail={setEmail}
                 condition={condition}
                 setCondition={setCondition}
+                painLevel={painLevel}
+                setPainLevel={setPainLevel}
+                timeline={timeline}
+                setTimeline={setTimeline}
                 contactPreference={contactPreference}
                 setContactPreference={setContactPreference}
                 status={status}
@@ -340,6 +355,10 @@ interface QualificationCardProps {
   setEmail: (v: string) => void;
   condition: string;
   setCondition: (v: string) => void;
+  painLevel: string;
+  setPainLevel: (v: string) => void;
+  timeline: string;
+  setTimeline: (v: string) => void;
   contactPreference: ContactPreference | "";
   setContactPreference: (v: ContactPreference) => void;
   status: FormStatus;
@@ -358,6 +377,10 @@ function QualificationCard({
   setEmail,
   condition,
   setCondition,
+  painLevel,
+  setPainLevel,
+  timeline,
+  setTimeline,
   contactPreference,
   setContactPreference,
   status,
@@ -439,6 +462,43 @@ function QualificationCard({
           </div>
         </div>
 
+        {/* Row 3 — Pain Level + Ideal Timeline */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label htmlFor="cn-pain" className="sr-only">Pain level</label>
+            <select
+              id="cn-pain"
+              required
+              value={painLevel}
+              onChange={(e) => setPainLevel(e.target.value)}
+              className={inputClass}
+            >
+              <option value="" disabled>Pain level (0 = none, 10 = severe)</option>
+              {Array.from({ length: 11 }, (_, i) => (
+                <option key={i} value={String(i)}>
+                  {i}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label htmlFor="cn-timeline" className="sr-only">Ideal timeline</label>
+            <select
+              id="cn-timeline"
+              required
+              value={timeline}
+              onChange={(e) => setTimeline(e.target.value)}
+              className={inputClass}
+            >
+              <option value="" disabled>Ideal timeline</option>
+              <option value="Within 30 days">Within 30 days</option>
+              <option value="1-3 months">1–3 months</option>
+              <option value="3-6 months">3–6 months</option>
+              <option value="Just researching">Just researching</option>
+            </select>
+          </div>
+        </div>
+
         {error && <p className="text-xs text-red-600">{error}</p>}
 
         <motion.button
@@ -477,11 +537,7 @@ function QualificationCard({
   );
 }
 
-function ConfirmationCard({
-  contactPreference,
-}: {
-  contactPreference: ContactPreference;
-}) {
+function ConfirmationCard() {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -493,20 +549,13 @@ function ConfirmationCard({
         <CheckCircle2 className="h-7 w-7 text-seafoam-dark" />
       </div>
       <h2 className="mt-4 text-center font-display font-medium text-2xl md:text-3xl tracking-tight">
-        Thanks — we've got your request.
+        Thanks — we&apos;ve got your request.
       </h2>
-      <p className="mt-4 text-gray-700 text-sm md:text-base leading-relaxed">
-        We prefer Zoom when possible, but we understand some clients prefer
-        phone calls. You will receive text and email reminders 1 day, 1 hour,
-        and 5 minutes before your{" "}
-        {contactPreference === "zoom" ? "Zoom" : "phone"} appointment. If you
-        need to reschedule, please let us know as soon as possible.
-      </p>
-      <p className="mt-3 text-gray-700 text-sm md:text-base leading-relaxed">
-        Appointments are available Monday–Saturday, 9:00 AM–7:00 PM.
+      <p className="mt-3 text-center text-gray-600 text-sm md:text-base leading-relaxed">
+        Ariana is calling you now. Watch your phone — we&apos;re dialing within 60 seconds.
       </p>
       <p className="mt-5 text-center text-xs text-gray-400">
-        Questions in the meantime?{" "}
+        Didn&apos;t get the call?{" "}
         <a href="tel:+17405470921" className="text-ocean font-medium hover:underline">
           Call us at (740) 547-0921
         </a>

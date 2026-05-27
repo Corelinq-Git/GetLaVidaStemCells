@@ -69,7 +69,7 @@ export default function SqueezePage() {
         body: JSON.stringify({ phone, name }),
       });
       if (!res.ok) {
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
         throw new Error(data.error || "Failed to request callback");
       }
       setStatus("sent");
@@ -172,10 +172,15 @@ export default function SqueezePage() {
         >
           <a
             href="tel:+17405470921"
-            className="hidden md:inline-flex items-center gap-2 text-sm font-semibold text-cream hover:text-seafoam transition-colors tracking-wide [text-shadow:_0_1px_3px_rgba(0,0,0,0.7)]"
+            className="hidden md:flex flex-col items-end leading-tight text-cream hover:text-seafoam transition-colors"
           >
-            <PhoneCall className="h-4 w-4 text-seafoam" />
-            (740) 547-0921
+            <span className="inline-flex items-center gap-2 text-sm font-semibold tracking-wide [text-shadow:_0_1px_3px_rgba(0,0,0,0.7)]">
+              <PhoneCall className="h-4 w-4 text-seafoam" />
+              (740) 547-0921
+            </span>
+            <span className="text-[10px] uppercase tracking-[0.18em] text-cream font-semibold [text-shadow:_0_1px_3px_rgba(0,0,0,0.85)] mt-0.5">
+              Call 24/7
+            </span>
           </a>
           <div className="hidden sm:flex items-center gap-2 rounded-full bg-cream/10 backdrop-blur-md border border-cream/15 px-3 py-1.5">
             <Sparkles className="h-3.5 w-3.5 text-seafoam" />
@@ -243,8 +248,8 @@ export default function SqueezePage() {
             />
             <ProofRow
               icon={<Lightbulb className="h-4 w-4" />}
-              title="Stem Cell Innovation Redefined"
-              meta="Next-generation regenerative care"
+              title="We Treat Most Conditions"
+              meta="Recovery from Pain is Possible!"
             />
           </motion.div>
         </div>

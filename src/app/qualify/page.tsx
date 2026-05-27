@@ -20,7 +20,7 @@ export default function QualifyRoute() {
       imageSrc="/images/treatment-room.webp"
       imageAlt="Modern treatment room with a Caribbean ocean view in Punta Cana, Dominican Republic"
       imageObjectClass="object-center"
-      headline="See If You Qualify"
+      headline="See If You Are A Candidate"
       pageSource="qualify"
       subCopy="Discover whether you may be a candidate for our personalized treatment programs and advanced care options. Complete the brief consultation form to receive expert guidance tailored to your needs."
       tile4={{
