@@ -15,6 +15,7 @@ import { RetellWebClient } from "retell-client-js-sdk";
 import { cn } from "@/lib/utils";
 import { ARIANA_OPEN_EVENT, type ArianaOpenDetail } from "@/lib/ariana";
 import { track } from "@/lib/track";
+import { normalizePhone } from "@/lib/phone";
 
 type WidgetView =
   | "closed"
@@ -108,6 +109,13 @@ export default function VoiceAgentWidget() {
   }
 
   async function requestCallback() {
+    const phoneCheck = normalizePhone(callbackPhone);
+    if (!phoneCheck.valid) {
+      setCallbackError(phoneCheck.error || "Please enter a valid phone number");
+      return;
+    }
+    const e164 = phoneCheck.e164!;
+
     setCallbackLoading(true);
     setCallbackError(null);
 
@@ -115,7 +123,7 @@ export default function VoiceAgentWidget() {
       const res = await fetch("/api/retell/callback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: callbackPhone, name: callbackName }),
+        body: JSON.stringify({ phone: e164, name: callbackName }),
       });
 
       if (!res.ok) {
@@ -390,10 +398,17 @@ export default function VoiceAgentWidget() {
                   />
                   <input
                     type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
                     value={callbackPhone}
                     onChange={(e) => setCallbackPhone(e.target.value)}
                     placeholder="Phone number"
-                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean focus:border-transparent"
+                    aria-invalid={!!callbackError}
+                    className={`w-full px-4 py-2.5 rounded-lg border text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:border-transparent ${
+                      callbackError
+                        ? "border-red-400 focus:ring-red-400"
+                        : "border-gray-300 focus:ring-ocean"
+                    }`}
                   />
 
                   {callbackError && (

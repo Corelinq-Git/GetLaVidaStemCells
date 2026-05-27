@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import Retell from "retell-sdk";
+import { normalizePhone } from "@/lib/phone";
 
 const retell = new Retell({ apiKey: process.env.RETELL_API_KEY! });
 
+// Defense-in-depth: client validates first, but trust nothing — re-validate
+// the same way on the server so a tampered/buggy client can't push garbage
+// into Retell. Shape check via zod; structural phone check via shared util.
 const callbackSchema = z.object({
-  phone: z.string().min(7, "Valid phone number required"),
+  phone: z.string().min(1, "Phone number is required"),
   name: z.string().optional(),
 });
 
@@ -13,6 +17,17 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const data = callbackSchema.parse(body);
+
+    // Structural phone validation — uses the same util the client runs, so
+    // client + server behavior can never drift.
+    const phoneCheck = normalizePhone(data.phone);
+    if (!phoneCheck.valid) {
+      return NextResponse.json(
+        { error: phoneCheck.error || "Invalid phone number" },
+        { status: 400 }
+      );
+    }
+    const phone = phoneCheck.e164!;
 
     const agentId = process.env.NEXT_PUBLIC_RETELL_OUTBOUND_AGENT_ID;
     const fromNumber = process.env.RETELL_FROM_NUMBER;
@@ -23,11 +38,6 @@ export async function POST(request: Request) {
         { status: 500 }
       );
     }
-
-    // Format phone to E.164
-    let phone = data.phone.replace(/\D/g, "");
-    if (phone.length === 10) phone = "1" + phone;
-    if (!phone.startsWith("+")) phone = "+" + phone;
 
     await retell.call.createPhoneCall({
       from_number: fromNumber,

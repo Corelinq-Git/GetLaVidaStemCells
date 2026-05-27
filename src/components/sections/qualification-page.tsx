@@ -36,6 +36,7 @@ function InstagramIcon({ className }: { className?: string }) {
 }
 import { openAriana } from "@/lib/ariana";
 import { track, type PageSource } from "@/lib/track";
+import { normalizePhone } from "@/lib/phone";
 
 interface QualificationPageProps {
   imageSrc: string;
@@ -88,6 +89,12 @@ export default function QualificationPage({
       setError("Please complete all fields.");
       return;
     }
+    const phoneCheck = normalizePhone(phone);
+    if (!phoneCheck.valid) {
+      setError(phoneCheck.error || "Please enter a valid phone number");
+      return;
+    }
+    const e164 = phoneCheck.e164!;
     setStatus("loading");
     setError(null);
 
@@ -105,7 +112,7 @@ export default function QualificationPage({
     fetch("/api/retell/callback", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone, name }),
+      body: JSON.stringify({ phone: e164, name }),
     }).catch((err) => {
       console.error("Retell callback failed (non-blocking):", err);
     });
@@ -116,7 +123,7 @@ export default function QualificationPage({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           fullName: name,
-          phone,
+          phone: e164,
           email,
           condition,
           painLevel,
@@ -398,6 +405,12 @@ function QualificationCard({
 }: QualificationCardProps) {
   const inputClass =
     "w-full px-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean transition-colors";
+  const inputClassError =
+    "w-full px-4 py-3 rounded-xl border border-red-400 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400/30 focus:border-red-500 transition-colors";
+
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  const phoneCheck = normalizePhone(phone);
+  const showPhoneError = phoneTouched && !phoneCheck.valid && phone.length > 0;
 
   return (
     <div className="rounded-2xl bg-white text-ocean-deepest p-6 md:p-7 shadow-2xl shadow-black/30 border border-white/40">
@@ -430,13 +443,22 @@ function QualificationCard({
             <input
               id="cn-phone"
               type="tel"
+              inputMode="tel"
               autoComplete="tel"
               placeholder="Phone number"
               required
+              aria-invalid={showPhoneError}
+              aria-describedby={showPhoneError ? "cn-phone-error" : undefined}
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className={inputClass}
+              onBlur={() => setPhoneTouched(true)}
+              className={showPhoneError ? inputClassError : inputClass}
             />
+            {showPhoneError && (
+              <p id="cn-phone-error" className="mt-1.5 text-xs text-red-600">
+                {phoneCheck.error}
+              </p>
+            )}
           </div>
         </div>
 

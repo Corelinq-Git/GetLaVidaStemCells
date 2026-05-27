@@ -34,6 +34,7 @@ function InstagramIcon({ className }: { className?: string }) {
 }
 import { openAriana } from "@/lib/ariana";
 import { track } from "@/lib/track";
+import { normalizePhone } from "@/lib/phone";
 
 export default function SqueezePage() {
   const [phone, setPhone] = useState("");
@@ -44,7 +45,15 @@ export default function SqueezePage() {
 
   async function submit(e: FormEvent) {
     e.preventDefault();
-    if (!phone) return;
+
+    const phoneCheck = normalizePhone(phone);
+    if (!phoneCheck.valid) {
+      setStatus("error");
+      setError(phoneCheck.error || "Please enter a valid phone number");
+      return;
+    }
+    const e164 = phoneCheck.e164!;
+
     setStatus("loading");
     setError(null);
 
@@ -56,7 +65,7 @@ export default function SqueezePage() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        phone,
+        phone: e164,
         ...(name.trim() ? { fullName: name.trim() } : {}),
         ...(email.trim() ? { email: email.trim() } : {}),
         pageSource: "squeeze-home",
@@ -69,7 +78,7 @@ export default function SqueezePage() {
       const res = await fetch("/api/retell/callback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone, name }),
+        body: JSON.stringify({ phone: e164, name }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -300,6 +309,11 @@ interface SqueezeCardProps {
 }
 
 function SqueezeCard({ phone, setPhone, name, setName, email, setEmail, status, error, onSubmit }: SqueezeCardProps) {
+  const [phoneTouched, setPhoneTouched] = useState(false);
+  const phoneCheck = normalizePhone(phone);
+  const showPhoneError = phoneTouched && !phoneCheck.valid && phone.length > 0;
+  const submitDisabled = !phoneCheck.valid || status === "loading";
+
   return (
     <div className="rounded-2xl bg-white text-ocean-deepest p-6 md:p-7 shadow-2xl shadow-black/30 border border-white/40">
       {/* Eyebrow */}
@@ -339,13 +353,26 @@ function SqueezeCard({ phone, setPhone, name, setName, email, setEmail, status, 
           <input
             id="sq-phone"
             type="tel"
+            inputMode="tel"
             autoComplete="tel"
             placeholder="Phone number"
             required
+            aria-invalid={showPhoneError}
+            aria-describedby={showPhoneError ? "sq-phone-error" : undefined}
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="w-full px-4 py-3.5 rounded-xl border-2 border-gray-200 text-base font-medium text-ocean-deepest placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean transition-colors"
+            onBlur={() => setPhoneTouched(true)}
+            className={`w-full px-4 py-3.5 rounded-xl border-2 text-base font-medium text-ocean-deepest placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-colors ${
+              showPhoneError
+                ? "border-red-400 focus:ring-red-400/30 focus:border-red-500"
+                : "border-gray-200 focus:ring-ocean/30 focus:border-ocean"
+            }`}
           />
+          {showPhoneError && (
+            <p id="sq-phone-error" className="mt-1.5 text-xs text-red-600">
+              {phoneCheck.error}
+            </p>
+          )}
         </div>
         <div>
           <label htmlFor="sq-email" className="sr-only">Email</label>
@@ -364,9 +391,9 @@ function SqueezeCard({ phone, setPhone, name, setName, email, setEmail, status, 
 
         <motion.button
           type="submit"
-          disabled={!phone || status === "loading"}
-          whileHover={status !== "loading" ? { scale: 1.01, y: -1 } : undefined}
-          whileTap={status !== "loading" ? { scale: 0.99 } : undefined}
+          disabled={submitDisabled}
+          whileHover={!submitDisabled ? { scale: 1.01, y: -1 } : undefined}
+          whileTap={!submitDisabled ? { scale: 0.99 } : undefined}
           transition={{ type: "spring", stiffness: 400, damping: 25 }}
           className="relative w-full py-4 rounded-xl bg-ocean text-white font-bold text-base shadow-lg shadow-ocean/40 hover:bg-ocean-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer overflow-hidden group"
         >
