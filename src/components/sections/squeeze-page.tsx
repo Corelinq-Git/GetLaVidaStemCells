@@ -257,9 +257,7 @@ export default function SqueezePage() {
 
       {/* Bottom utility bar — compliance + minimal socials. Phone moved to top header to keep it clear of the chat widget. */}
       <div className="absolute bottom-0 left-0 right-0 z-20 px-5 md:px-10 py-4 flex items-center justify-between gap-4 pr-24 md:pr-28">
-        <p className="text-[10px] md:text-[11px] text-cream/40 max-w-2xl leading-tight tracking-wide">
-          Not FDA-approved. Results may vary. Consult your physician.
-        </p>
+        <p className="text-[10px] md:text-[11px] text-cream/40 max-w-2xl leading-tight tracking-wide" aria-hidden="true">&nbsp;</p>
         <div className="flex items-center gap-4 text-cream/55">
           <a
             href="https://instagram.com/La_Vida.dr"

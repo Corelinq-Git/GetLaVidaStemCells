@@ -289,7 +289,7 @@ export default function QualificationPage({
             <ProofRow
               icon={<Clock className="h-4 w-4" />}
               title="Same-week consults available"
-              meta="Zoom or phone, Mon–Sat 9am–7pm"
+              meta="Consultations available 9am–7pm Pacific Time"
             />
             <ProofRow
               icon={<ShieldCheck className="h-4 w-4" />}
@@ -316,9 +316,7 @@ export default function QualificationPage({
 
       {/* Bottom utility bar */}
       <div className="absolute bottom-0 left-0 right-0 z-20 px-5 md:px-10 py-4 flex items-center justify-between gap-4 pr-24 md:pr-28">
-        <p className="text-[10px] md:text-[11px] text-cream/40 max-w-2xl leading-tight tracking-wide">
-          Not FDA-approved. Results may vary. Consult your physician.
-        </p>
+        <p className="text-[10px] md:text-[11px] text-cream/40 max-w-2xl leading-tight tracking-wide" aria-hidden="true">&nbsp;</p>
         <div className="flex items-center gap-4 text-cream/55">
           <a
             href="https://instagram.com/La_Vida.dr"
