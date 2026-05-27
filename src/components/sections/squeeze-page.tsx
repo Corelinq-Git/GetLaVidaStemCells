@@ -33,6 +33,7 @@ function InstagramIcon({ className }: { className?: string }) {
   );
 }
 import { openAriana } from "@/lib/ariana";
+import { track } from "@/lib/track";
 
 export default function SqueezePage() {
   const [phone, setPhone] = useState("");
@@ -46,6 +47,8 @@ export default function SqueezePage() {
     if (!phone) return;
     setStatus("loading");
     setError(null);
+
+    track("lead_submitted", { page: "squeeze", method: "phone_callback" });
 
     // Fire-and-forget lead capture to CoreLinq. Best-effort — failure here must
     // not block the user from getting their Ariana callback.
@@ -172,6 +175,7 @@ export default function SqueezePage() {
         >
           <a
             href="tel:+17405470921"
+            onClick={() => track("phone_click", { page: "squeeze", location: "header" })}
             className="hidden md:flex flex-col items-end leading-tight text-cream hover:text-seafoam transition-colors"
           >
             <span className="inline-flex items-center gap-2 text-sm font-semibold tracking-wide [text-shadow:_0_1px_3px_rgba(0,0,0,0.7)]">
@@ -381,7 +385,10 @@ function SqueezeCard({ phone, setPhone, name, setName, email, setEmail, status, 
         {/* Secondary action — chat as alternative */}
         <button
           type="button"
-          onClick={() => openAriana("chat")}
+          onClick={() => {
+            track("cta_click", { page: "squeeze", cta: "chat_with_ariana" });
+            openAriana("chat");
+          }}
           className="w-full inline-flex items-center justify-center gap-2 text-xs text-gray-500 hover:text-ocean transition-colors cursor-pointer pt-1"
         >
           <MessageCircle className="h-3.5 w-3.5" />

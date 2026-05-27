@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Plus_Jakarta_Sans, Space_Grotesk } from "next/font/google";
 import Script from "next/script";
 import VoiceAgentWidget from "@/components/sections/voice-agent-widget";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const inter = Inter({
@@ -82,6 +83,7 @@ export default function RootLayout({
         />
         <main className="flex-1 min-h-0">{children}</main>
         <VoiceAgentWidget />
+        <Analytics />
 
         {metaPixelId && (
           <Script id="meta-pixel" strategy="afterInteractive">

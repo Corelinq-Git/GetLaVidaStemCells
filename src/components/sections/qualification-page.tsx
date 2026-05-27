@@ -35,6 +35,7 @@ function InstagramIcon({ className }: { className?: string }) {
   );
 }
 import { openAriana } from "@/lib/ariana";
+import { track, type PageSource } from "@/lib/track";
 
 interface QualificationPageProps {
   imageSrc: string;
@@ -89,6 +90,15 @@ export default function QualificationPage({
     }
     setStatus("loading");
     setError(null);
+
+    track("lead_submitted", {
+      page: pageSource as PageSource,
+      method: "qualification_form",
+      condition,
+      pain_level: painLevel,
+      timeline,
+      contact_preference: contactPreference,
+    });
 
     // Fire-and-forget Retell callback — triggers Ariana to call within ~60s.
     // Best-effort: failure here must not block the lead capture / confirmation.
@@ -218,6 +228,7 @@ export default function QualificationPage({
         >
           <a
             href="tel:+17405470921"
+            onClick={() => track("phone_click", { page: pageSource as PageSource, location: "header" })}
             className="hidden md:flex flex-col items-end leading-tight text-cream hover:text-seafoam transition-colors"
           >
             <span className="inline-flex items-center gap-2 text-sm font-semibold tracking-wide [text-shadow:_0_1px_3px_rgba(0,0,0,0.7)]">
@@ -524,7 +535,12 @@ function QualificationCard({
 
         <button
           type="button"
-          onClick={() => openAriana("chat")}
+          onClick={() => {
+            // Subcomponent doesn't have pageSource in scope. Vercel Analytics
+            // also tracks the current URL, so the page is inferred from there.
+            track("cta_click", { cta: "chat_with_ariana" });
+            openAriana("chat");
+          }}
           className="w-full inline-flex items-center justify-center gap-2 text-xs text-gray-500 hover:text-ocean transition-colors cursor-pointer pt-1"
         >
           <MessageCircle className="h-3.5 w-3.5" />

@@ -14,6 +14,7 @@ import {
 import { RetellWebClient } from "retell-client-js-sdk";
 import { cn } from "@/lib/utils";
 import { ARIANA_OPEN_EVENT, type ArianaOpenDetail } from "@/lib/ariana";
+import { track } from "@/lib/track";
 
 type WidgetView =
   | "closed"
@@ -122,6 +123,7 @@ export default function VoiceAgentWidget() {
         throw new Error(data.error || "Failed to request callback");
       }
 
+      track("callback_requested", { source: "widget_form" });
       setView("callback-sent");
     } catch (err) {
       setCallbackError(err instanceof Error ? err.message : "Something went wrong");
@@ -247,7 +249,10 @@ export default function VoiceAgentWidget() {
                 </p>
 
                 <button
-                  onClick={() => setView("chat")}
+                  onClick={() => {
+                    track("chat_opened", { source: "widget_menu" });
+                    setView("chat");
+                  }}
                   className="w-full flex items-center gap-3 rounded-xl border border-gray-200 p-4 text-left transition-all hover:border-ocean hover:bg-ocean/5 cursor-pointer"
                 >
                   <div className="w-10 h-10 rounded-full bg-seafoam/15 flex items-center justify-center shrink-0">
@@ -260,7 +265,10 @@ export default function VoiceAgentWidget() {
                 </button>
 
                 <button
-                  onClick={startWebCall}
+                  onClick={() => {
+                    track("talk_now_started", { source: "widget_menu" });
+                    void startWebCall();
+                  }}
                   className="w-full flex items-center gap-3 rounded-xl border border-gray-200 p-4 text-left transition-all hover:border-ocean hover:bg-ocean/5 cursor-pointer"
                 >
                   <div className="w-10 h-10 rounded-full bg-seafoam/15 flex items-center justify-center shrink-0">
