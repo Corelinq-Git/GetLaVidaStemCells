@@ -330,8 +330,8 @@ function SqueezeCard({ phone, setPhone, name, setName, email, setEmail, status, 
 
       {/* Sub — explicit objective */}
       <p className="mt-3 text-gray-600 leading-relaxed text-sm md:text-base">
-        Drop your number. Ariana - our AI concierge - will call you in under
-        60 seconds, qualify your case, and book a private consult.
+        Drop your number. Ariana will call you in under 60 seconds, qualify
+        your case, and book a private consult.
       </p>
 
       {/* Form */}

@@ -85,6 +85,18 @@ export default function RootLayout({
         <VoiceAgentWidget />
         <Analytics />
 
+        {/*
+          CoreLinq website tracker — auto-captures page views, sessions,
+          UTM attribution, form submits, and links anonymous visitors to
+          contacts. Per-CTA events flow through window.CLQ.conversion()
+          via src/lib/track.ts. Org_id is hardcoded to La Vida; the
+          tracking_configs row in CoreLinq's DB gates the allowed domain.
+        */}
+        <Script
+          src="https://corelinq-platform.vercel.app/api/tracking/script/1a71da00-0000-0000-0000-000000000001"
+          strategy="afterInteractive"
+        />
+
         {metaPixelId && (
           <Script id="meta-pixel" strategy="afterInteractive">
             {`

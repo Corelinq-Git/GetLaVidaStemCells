@@ -1,38 +1,23 @@
 /**
  * Event tracking helper for La Vida landing pages.
  *
- * What it does:
- *  1. Fires the event into Vercel Web Analytics via @vercel/analytics
- *     `track()` so it shows up in the project dashboard.
- *  2. Forwards the same payload (best-effort, fire-and-forget) to the
- *     CoreLinq comm-stack event ingest endpoint at
- *     `NEXT_PUBLIC_EVENT_WEBHOOK_URL`. If the env var is unset, the
- *     forward is a no-op.
+ * Dual-pipe:
+ *  1. Vercel Web Analytics (`@vercel/analytics` → in-dashboard funnel for
+ *     Britt/Perry — kept unchanged).
+ *  2. CoreLinq CRM via `window.CLQ.conversion()`, exposed by the embed
+ *     script that's loaded in `src/app/layout.tsx`. The script auto-tracks
+ *     page views, sessions, form submits, and UTM/referrer attribution.
+ *     This helper is for explicitly-named CTA events (phone clicks, voice
+ *     widget opens, etc.) which the script wouldn't catch on its own
+ *     because `tracking_configs.track_clicks` doesn't do blind capture.
  *
- * Why both:
- *  - Vercel gives Britt/Perry a free in-dashboard funnel view.
- *  - CoreLinq receiver powers real-time UX components in the comm
- *    codebase ("Someone just booked a consult", etc.).
+ * If `window.CLQ` isn't loaded yet (e.g. event fires before script
+ * hydrates) the call is silently dropped — fire-and-forget, never throws.
  *
- * Event payload contract (what CoreLinq's /api/events should accept):
- *
- *    POST {NEXT_PUBLIC_EVENT_WEBHOOK_URL}
- *    Content-Type: application/json
- *    {
- *      "event": "lead_submitted" | "cta_click" | "phone_click" |
- *               "chat_opened" | "talk_now_started" | "callback_requested",
- *      "page": "squeeze" | "qualify" | "consultation",
- *      "properties": {
- *        // event-specific fields (e.g. cta name, method)
- *        ...
- *      },
- *      "timestamp": "2026-05-27T22:00:00.000Z",
- *      "url": "https://...",        // window.location.href at fire time
- *      "referrer": "https://..."    // document.referrer
- *    }
- *
- *  Response: ignored. Errors are swallowed. This is fire-and-forget so the
- *  user's main interaction never blocks on event delivery.
+ * NOTE: structured Contact creation still flows through the server-side
+ * proxy at `src/app/api/lead/route.ts` → CoreLinq `/api/public/leads/capture`.
+ * `CLQ.identify()` is invoked automatically by the embed script's form
+ * listener for any form that has an `email` or `phone` input.
  */
 
 import { track as vercelTrack } from "@vercel/analytics";
@@ -49,10 +34,17 @@ export type PageSource = "squeeze" | "qualify" | "consultation";
 
 export type EventProperties = Record<string, string | number | boolean | null>;
 
-const WEBHOOK_URL =
-  typeof process !== "undefined"
-    ? process.env.NEXT_PUBLIC_EVENT_WEBHOOK_URL || ""
-    : "";
+declare global {
+  interface Window {
+    CLQ?: {
+      conversion: (
+        type: string,
+        data: { conversionName?: string; metadata?: Record<string, unknown> },
+      ) => void;
+      identify: (data: { email?: string; phone?: string }) => void;
+    };
+  }
+}
 
 export function track(
   event: EventName,
@@ -67,36 +59,11 @@ export function track(
     // never throw from tracking
   }
 
-  // 2) CoreLinq comm-stack ingest — fire-and-forget
-  if (!WEBHOOK_URL) return;
-
-  const payload = {
-    event,
-    page: properties.page ?? null,
-    properties,
-    timestamp: new Date().toISOString(),
-    url: window.location.href,
-    referrer: document.referrer || null,
-  };
-
+  // 2) CoreLinq CRM — fire conversion event with full metadata
   try {
-    // Prefer sendBeacon so the request survives page navigation (e.g.
-    // when a CTA click triggers a route change immediately after).
-    if (navigator.sendBeacon) {
-      const blob = new Blob([JSON.stringify(payload)], {
-        type: "application/json",
-      });
-      navigator.sendBeacon(WEBHOOK_URL, blob);
-      return;
-    }
-
-    void fetch(WEBHOOK_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-      keepalive: true,
-    }).catch(() => {
-      // swallow
+    window.CLQ?.conversion(event, {
+      conversionName: event,
+      metadata: properties,
     });
   } catch {
     // swallow
