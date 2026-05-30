@@ -487,8 +487,10 @@ function QualificationCard({
               className={inputClass}
             >
               <option value="" disabled>Condition Category</option>
-              <option value="Musculoskeletal">Musculoskeletal</option>
-              <option value="Autoimmune">Autoimmune</option>
+              <option value="Muscular/joint pain">Muscular/joint pain</option>
+   <option value="Degenerative conditions">Degenerative conditions</option>
+   <option value="Autoimmune">Autoimmune</option>
+   <option value="Neurological">Neurological</option>
             </select>
           </div>
         </div>
