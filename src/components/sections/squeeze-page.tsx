@@ -246,12 +246,12 @@ export default function SqueezePage() {
           >
             <ProofRow
               icon={<Clock className="h-4 w-4" />}
-              title="Average call: 5 minutes"
-              meta="Qualification + booking"
+              title="Pain Management Support"
+              meta="Free Consultation"
             />
             <ProofRow
               icon={<ShieldCheck className="h-4 w-4" />}
-              title="92–95% cell viability"
+              title="Regain Comfort & Mobility"
               meta="Fresh UC-MSC, never frozen"
             />
             <ProofRow

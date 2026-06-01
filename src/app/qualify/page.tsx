@@ -25,7 +25,7 @@ export default function QualifyRoute() {
       subCopy="Discover whether you may be a candidate for our personalized treatment programs and advanced care options. Complete the brief consultation form to receive expert guidance tailored to your needs."
       tile4={{
         iconName: "target",
-        title: "Tailored Treatment Plans",
+        title: "Tailored Treatment Goals to Restore Active Living",
         subtitle: "Built around your condition and goals",
       }}
     />
