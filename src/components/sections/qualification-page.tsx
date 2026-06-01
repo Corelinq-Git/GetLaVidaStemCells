@@ -306,7 +306,7 @@ export default function QualificationPage({
           >
             <ProofRow
               icon={<Clock className="h-4 w-4" />}
-              title="Same-week consults available to Pain Managment Support"
+              title="Pain Managment Support"
               meta="Consultations available 9am–7pm Pacific Time"
             />
             <ProofRow
