@@ -22,7 +22,8 @@ export default function ConsultationRoute() {
       imageObjectClass="object-[70%_center] md:object-center"
       headline="Treatment Designed Around You"
       pageSource="consultation"
-      subCopy="Every patient deserves a tailored approach to care. Tell us about your condition and our team will prepare a personalized path toward relief, recovery, and long-term wellness."
+      subCopy="Every patient deserves a tailored approach to care. Tell us about your condition and our team will prepare a personalized path toward relief, recovery, and long-term wellness."      
+      proofRowTitle="Regain Comfort & Mobility"
       tile4={{
         iconName: "award",
         title: "Premium Care. Exceptional Value: We Treat Most Conditions",

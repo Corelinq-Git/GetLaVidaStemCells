@@ -45,6 +45,7 @@ interface QualificationPageProps {
   headline: string;
   subCopy: string;
   pageSource: string;
+  proofRowTitle?: string;
   tile4: {
     iconName: "award" | "target" | "lightbulb";
     title: string;
@@ -62,6 +63,7 @@ export default function QualificationPage({
   headline,
   subCopy,
   pageSource,
+  proofRowTitle,
   tile4,
 }: QualificationPageProps) {
   const [name, setName] = useState("");
@@ -306,7 +308,7 @@ export default function QualificationPage({
           >
             <ProofRow
               icon={<Clock className="h-4 w-4" />}
-              title="Pain Managment Support"
+              title={proofRowTitle || "Pain Management Support"}
               meta="Consultations available 9am–7pm Pacific Time"
             />
             <ProofRow
