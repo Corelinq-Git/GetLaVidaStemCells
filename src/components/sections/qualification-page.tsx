@@ -97,6 +97,7 @@ export default function QualificationPage({
       return;
     }
     const e164 = phoneCheck.e164!;
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     setStatus("loading");
     setError(null);
 
@@ -132,6 +133,7 @@ export default function QualificationPage({
           timeline,
           contactPreference,
           pageSource,
+          timezone,
         }),
       });
       if (!res.ok) {
