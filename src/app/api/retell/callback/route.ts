@@ -29,6 +29,11 @@ export async function POST(request: Request) {
     }
     const phone = phoneCheck.e164!;
 
+    // Split "Jane Doe" so the agent can greet by first name on the callback.
+    const fullName = (data.name || "").trim();
+    const [firstName, ...rest] = fullName.split(/\s+/).filter(Boolean);
+    const lastName = rest.join(" ");
+
     const agentId = process.env.NEXT_PUBLIC_RETELL_OUTBOUND_AGENT_ID;
     const fromNumber = process.env.RETELL_FROM_NUMBER;
 
@@ -43,6 +48,14 @@ export async function POST(request: Request) {
       from_number: fromNumber,
       to_number: phone,
       override_agent_id: agentId,
+      // Pass the lead's identity so Ariana can greet them by name and book with
+      // the real phone number (instead of an empty {{attendee_phone}} token).
+      retell_llm_dynamic_variables: {
+        ...(firstName ? { first_name: firstName } : {}),
+        ...(lastName ? { last_name: lastName } : {}),
+        ...(fullName ? { patient_name: fullName } : {}),
+        attendee_phone: phone,
+      },
     });
 
     return NextResponse.json({ success: true });
