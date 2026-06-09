@@ -55,7 +55,15 @@ export default function VoiceAgentWidget() {
     setCallStatus("connecting");
 
     try {
-      const res = await fetch("/api/retell/web-call", { method: "POST" });
+      const res = await fetch("/api/retell/web-call", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        // Send the visitor's browser timezone so the agent offers + books slots
+        // in their local time (no more clinic-time / off-by-an-hour invites).
+        body: JSON.stringify({
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        }),
+      });
       if (!res.ok) throw new Error("Failed to create call");
       const { access_token } = await res.json();
 
@@ -123,7 +131,11 @@ export default function VoiceAgentWidget() {
       const res = await fetch("/api/retell/callback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: e164, name: callbackName }),
+        body: JSON.stringify({
+          phone: e164,
+          name: callbackName,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        }),
       });
 
       if (!res.ok) {

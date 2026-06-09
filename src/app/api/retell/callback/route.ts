@@ -11,6 +11,7 @@ const retell = new Retell({ apiKey: process.env.RETELL_API_KEY! });
 const callbackSchema = z.object({
   phone: z.string().min(1, "Phone number is required"),
   name: z.string().optional(),
+  timezone: z.string().optional(),
 });
 
 export async function POST(request: Request) {
@@ -54,6 +55,7 @@ export async function POST(request: Request) {
         ...(firstName ? { first_name: firstName } : {}),
         ...(lastName ? { last_name: lastName } : {}),
         ...(fullName ? { patient_name: fullName } : {}),
+        ...(data.timezone ? { patient_timezone: data.timezone } : {}),
         attendee_phone: phone,
       },
     });
