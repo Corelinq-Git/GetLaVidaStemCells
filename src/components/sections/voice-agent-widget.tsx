@@ -117,6 +117,11 @@ export default function VoiceAgentWidget() {
   }
 
   async function requestCallback() {
+    // Name is required so the agent has it (and doesn't have to re-collect it).
+    if (!callbackName.trim()) {
+      setCallbackError("Please enter your name");
+      return;
+    }
     const phoneCheck = normalizePhone(callbackPhone);
     if (!phoneCheck.valid) {
       setCallbackError(phoneCheck.error || "Please enter a valid phone number");
@@ -405,7 +410,7 @@ export default function VoiceAgentWidget() {
                     type="text"
                     value={callbackName}
                     onChange={(e) => setCallbackName(e.target.value)}
-                    placeholder="Your name (optional)"
+                    placeholder="Your full name"
                     className="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean focus:border-transparent"
                   />
                   <input
