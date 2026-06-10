@@ -112,7 +112,17 @@ export default function QualificationPage({
     fetch("/api/retell/callback", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone: e164, name }),
+      // Pass everything the form already collected so Ariana can confirm the
+      // email + reference the condition/pain/timeline instead of re-asking.
+      body: JSON.stringify({
+        phone: e164,
+        name,
+        ...(email ? { email } : {}),
+        ...(condition ? { condition } : {}),
+        ...(painLevel ? { painLevel } : {}),
+        ...(timeline ? { timeline } : {}),
+        ...(timezone ? { timezone } : {}),
+      }),
     }).catch((err) => {
       console.error("Retell callback failed (non-blocking):", err);
     });
