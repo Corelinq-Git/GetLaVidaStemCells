@@ -78,7 +78,12 @@ export default function SqueezePage() {
       const res = await fetch("/api/retell/callback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phone: e164, name }),
+        // Pass the email so Ariana confirms it instead of re-asking.
+        body: JSON.stringify({
+          phone: e164,
+          name,
+          ...(email.trim() ? { email: email.trim() } : {}),
+        }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));

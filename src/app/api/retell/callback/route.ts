@@ -12,6 +12,10 @@ const callbackSchema = z.object({
   phone: z.string().min(1, "Phone number is required"),
   name: z.string().optional(),
   timezone: z.string().optional(),
+  email: z.string().optional(),
+  condition: z.string().optional(),
+  painLevel: z.string().optional(),
+  timeline: z.string().optional(),
 });
 
 export async function POST(request: Request) {
@@ -56,6 +60,12 @@ export async function POST(request: Request) {
         ...(lastName ? { last_name: lastName } : {}),
         ...(fullName ? { patient_name: fullName } : {}),
         ...(data.timezone ? { patient_timezone: data.timezone } : {}),
+        // Everything the form already collected, so Ariana confirms rather than
+        // re-asks (the email especially) and can reference the intake context.
+        ...(data.email ? { attendee_email: data.email } : {}),
+        ...(data.condition ? { lead_condition: data.condition } : {}),
+        ...(data.painLevel ? { lead_pain_level: data.painLevel } : {}),
+        ...(data.timeline ? { lead_timeline: data.timeline } : {}),
         attendee_phone: phone,
       },
     });
