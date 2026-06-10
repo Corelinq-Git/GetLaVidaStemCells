@@ -53,8 +53,23 @@ export function normalizePhone(input: string | null | undefined): PhoneValidatio
     return invalid("Phone number must contain digits");
   }
 
-  // International (+ prefix) — accept 11..15 digit lengths per E.164
+  // International (+ prefix).
   if (hasPlus) {
+    // US country code (+1): enforce a real 10-digit national number. A US
+    // national number never starts with 0 or 1, so a leading trunk "0" (e.g.
+    // "+1 09497340624") is spurious — strip it. Reject anything that still isn't
+    // a valid 10-digit US number rather than dialing garbage.
+    if (digits.startsWith("1")) {
+      let national = digits.slice(1);
+      if (national.length === 11 && national[0] === "0") {
+        national = national.slice(1);
+      }
+      if (national.length !== 10 || national[0] === "0" || national[0] === "1") {
+        return invalid("Enter a valid 10-digit US phone number");
+      }
+      return { valid: true, e164: `+1${national}`, error: null };
+    }
+    // Other countries — accept 11..15 digit lengths per E.164.
     if (digits.length < 11 || digits.length > 15) {
       return invalid("International number must be 11–15 digits after country code");
     }
