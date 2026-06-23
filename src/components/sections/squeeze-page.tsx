@@ -296,6 +296,7 @@ interface SqueezeCardProps {
 }
 
 function SqueezeCard({ phone, setPhone, name, setName, email, setEmail, status, error, onSubmit }: SqueezeCardProps) {
+  const [consented, setConsented] = useState(false);
   return (
     <div className="rounded-2xl bg-white text-ocean-deepest p-6 md:p-7 shadow-2xl shadow-black/30 border border-white/40">
       {/* Eyebrow */}
@@ -357,10 +358,22 @@ function SqueezeCard({ phone, setPhone, name, setName, email, setEmail, status, 
         </div>
 
         {error && <p className="text-xs text-red-600">{error}</p>}
+        <label className="flex items-start gap-3 py-2">
+          <input
+            type="checkbox"
+            checked={consented}
+            onChange={(e) => setConsented(e.target.checked)}
+            required
+            className="mt-1 w-4 h-4 rounded border-gray-300 text-ocean focus:ring-ocean cursor-pointer"
+          />
+          <span className="text-xs text-gray-600 leading-relaxed">
+            I consent to La Vida Stem Cells contacting me by phone, text message, and email regarding my inquiry, appointment scheduling, and educational information. I understand that submitting this form does not establish a physician-patient relationship and is not a substitute for medical advice.
+          </span>
+        </label>
 
         <motion.button
           type="submit"
-          disabled={!phone || status === "loading"}
+          disabled={!phone || !consented || status === "loading"}
           whileHover={status !== "loading" ? { scale: 1.01, y: -1 } : undefined}
           whileTap={status !== "loading" ? { scale: 0.99 } : undefined}
           transition={{ type: "spring", stiffness: 400, damping: 25 }}
