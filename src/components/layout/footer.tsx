@@ -54,11 +54,11 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="mailto:care@lavidastemcells.com"
+                  href="mailto:leads@lavidastemcells.com"
                   className="inline-flex items-center gap-2 transition-all hover:text-coral hover:translate-x-1"
                 >
                   <Mail className="h-4 w-4 text-coral" />
-                  care@lavidastemcells.com
+                  leads@lavidastemcells.com
                 </a>
               </li>
               <li className="inline-flex items-center gap-2">

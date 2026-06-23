@@ -287,7 +287,7 @@ export default function SqueezePage() {
             <InstagramIcon className="h-4 w-4" />
           </a>
           <a
-            href="mailto:care@lavidastemcells.com"
+            href="mailto:leads@lavidastemcells.com"
             aria-label="Email"
             className="hover:text-seafoam transition-colors"
           >
