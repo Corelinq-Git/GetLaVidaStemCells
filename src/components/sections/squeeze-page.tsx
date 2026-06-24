@@ -315,9 +315,10 @@ interface SqueezeCardProps {
 
 function SqueezeCard({ phone, setPhone, name, setName, email, setEmail, status, error, onSubmit }: SqueezeCardProps) {
   const [phoneTouched, setPhoneTouched] = useState(false);
+  const [consented, setConsented] = useState(false);
   const phoneCheck = normalizePhone(phone);
   const showPhoneError = phoneTouched && !phoneCheck.valid && phone.length > 0;
-  const submitDisabled = !phoneCheck.valid || status === "loading";
+  const submitDisabled = !phoneCheck.valid || !consented || status === "loading";
 
   return (
     <div className="rounded-2xl bg-white text-ocean-deepest p-6 md:p-7 shadow-2xl shadow-black/30 border border-white/40">
@@ -391,6 +392,19 @@ function SqueezeCard({ phone, setPhone, name, setName, email, setEmail, status, 
             className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean transition-colors"
           />
         </div>
+
+        <label className="flex items-start gap-2.5 text-[11px] leading-relaxed text-gray-600 cursor-pointer">
+          <input
+            type="checkbox"
+            required
+            checked={consented}
+            onChange={(e) => setConsented(e.target.checked)}
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-ocean focus:ring-2 focus:ring-ocean/30"
+          />
+          <span>
+            I consent to La Vida Stem Cells contacting me by phone, text message, and email regarding my inquiry, appointment scheduling, and educational information. I understand that submitting this form does not establish a physician-patient relationship and is not a substitute for medical advice.
+          </span>
+        </label>
 
         {error && <p className="text-xs text-red-600">{error}</p>}
 
