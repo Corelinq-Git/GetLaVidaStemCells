@@ -54,7 +54,7 @@ const jsonLd = {
   description:
     "Stem cell therapy clinic in Punta Cana, Dominican Republic offering regenerative treatments.",
   telephone: "+1-740-547-0921",
-  email: "care@lavidastemcells.com",
+  email: "leads@lavidastemcells.com",
   address: {
     "@type": "PostalAddress",
     addressLocality: "Punta Cana",

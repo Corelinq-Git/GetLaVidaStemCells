@@ -24,7 +24,7 @@ Build up to 3 dedicated funnel landing pages for a stem cell therapy clinic in P
 - **Business:** La Vida Regenerative Medicine (La Vida Stem Cells)
 - **Location:** Punta Cana Village, Dominican Republic
 - **Phone:** 877-273-2220
-- **Email:** care@lavidastemcells.com
+- **Email:** leads@lavidastemcells.com
 - **Instagram:** @La_Vida.dr
 - **Head Physician:** Dr. Bernardo "Benny" Pichardo Caba — Founder, personally oversees all procedures
 - **Website (reference only):** lavidastemcells.com
