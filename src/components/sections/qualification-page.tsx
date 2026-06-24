@@ -420,6 +420,7 @@ function QualificationCard({
     "w-full px-4 py-3 rounded-xl border border-red-400 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400/30 focus:border-red-500 transition-colors";
 
   const [phoneTouched, setPhoneTouched] = useState(false);
+  const [consented, setConsented] = useState(false);
   const phoneCheck = normalizePhone(phone);
   const showPhoneError = phoneTouched && !phoneCheck.valid && phone.length > 0;
 
@@ -540,11 +541,24 @@ function QualificationCard({
           </div>
         </div>
 
+        <label className="flex items-start gap-2.5 text-[11px] leading-relaxed text-gray-600 cursor-pointer">
+          <input
+            type="checkbox"
+            required
+            checked={consented}
+            onChange={(e) => setConsented(e.target.checked)}
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-ocean focus:ring-2 focus:ring-ocean/30"
+          />
+          <span>
+            I consent to La Vida Stem Cells contacting me by phone, text message, and email regarding my inquiry, appointment scheduling, and educational information. I understand that submitting this form does not establish a physician-patient relationship and is not a substitute for medical advice.
+          </span>
+        </label>
+
         {error && <p className="text-xs text-red-600">{error}</p>}
 
         <motion.button
           type="submit"
-          disabled={status === "loading"}
+          disabled={status === "loading" || !consented}
           whileHover={status !== "loading" ? { scale: 1.01, y: -1 } : undefined}
           whileTap={status !== "loading" ? { scale: 0.99 } : undefined}
           transition={{ type: "spring", stiffness: 400, damping: 25 }}

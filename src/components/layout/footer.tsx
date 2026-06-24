@@ -116,6 +116,22 @@ export default function Footer() {
           </p>
         </div>
 
+        {/* Legal */}
+        <div className="mt-6 border-t border-white/10 pt-6">
+          <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-xs text-cream-muted/50">
+            <li>
+              <Link href="/privacy-policy" className="transition-colors hover:text-coral">
+                Privacy Policy
+              </Link>
+            </li>
+            <li>
+              <Link href="/notice-of-privacy-practices" className="transition-colors hover:text-coral">
+                Notice of Privacy Practices
+              </Link>
+            </li>
+          </ul>
+        </div>
+
         {/* Copyright */}
         <div className="mt-6 border-t border-white/10 pt-6">
           <p className="text-center text-xs text-cream-muted/30">
