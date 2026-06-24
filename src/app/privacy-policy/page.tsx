@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="h-full overflow-y-auto bg-white text-gray-800">
+    <div className="h-svh overflow-y-auto bg-white text-gray-800">
       <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
         <Link href="/" className="text-sm font-medium text-ocean hover:underline">
           ← Back to home
