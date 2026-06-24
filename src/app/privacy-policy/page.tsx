@@ -263,10 +263,10 @@ export default function PrivacyPolicyPage() {
               <br />
               Email:{" "}
               <a
-                href="mailto:care@lavidastemcells.com"
+                href="mailto:leads@lavidastemcells.com"
                 className="text-ocean hover:underline"
               >
-                care@lavidastemcells.com
+                leads@lavidastemcells.com
               </a>
             </p>
             <p>

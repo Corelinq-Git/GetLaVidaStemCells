@@ -225,10 +225,10 @@ export default function NoticeOfPrivacyPracticesPage() {
               <br />
               Email:{" "}
               <a
-                href="mailto:care@lavidastemcells.com"
+                href="mailto:leads@lavidastemcells.com"
                 className="text-ocean hover:underline"
               >
-                care@lavidastemcells.com
+                leads@lavidastemcells.com
               </a>
             </p>
             <p>You may also file a complaint with the:</p>
@@ -254,10 +254,10 @@ export default function NoticeOfPrivacyPracticesPage() {
               <br />
               Email:{" "}
               <a
-                href="mailto:care@lavidastemcells.com"
+                href="mailto:leads@lavidastemcells.com"
                 className="text-ocean hover:underline"
               >
-                care@lavidastemcells.com
+                leads@lavidastemcells.com
               </a>
             </p>
             <p>
