@@ -36,6 +36,10 @@ import { openAriana } from "@/lib/ariana";
 import { track } from "@/lib/track";
 import { normalizePhone } from "@/lib/phone";
 
+// Shared validation — all fields are mandatory before consent + submit.
+const isValidName = (v: string) => v.trim().length >= 2;
+const isValidEmail = (v: string) => /^\S+@\S+\.\S+$/.test(v.trim());
+
 export default function SqueezePage() {
   const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
@@ -46,6 +50,18 @@ export default function SqueezePage() {
   async function submit(e: FormEvent) {
     e.preventDefault();
 
+    // All fields are mandatory — re-validate here even though the UI gates
+    // the consent checkbox + button, so a tampered client can't bypass it.
+    if (!isValidName(name)) {
+      setStatus("error");
+      setError("Please enter your first name");
+      return;
+    }
+    if (!isValidEmail(email)) {
+      setStatus("error");
+      setError("Please enter a valid email address");
+      return;
+    }
     const phoneCheck = normalizePhone(phone);
     if (!phoneCheck.valid) {
       setStatus("error");
@@ -66,8 +82,8 @@ export default function SqueezePage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         phone: e164,
-        ...(name.trim() ? { fullName: name.trim() } : {}),
-        ...(email.trim() ? { email: email.trim() } : {}),
+        fullName: name.trim(),
+        email: email.trim(),
         pageSource: "squeeze-home",
       }),
     }).catch((err) => {
@@ -81,8 +97,8 @@ export default function SqueezePage() {
         // Pass the email so Ariana confirms it instead of re-asking.
         body: JSON.stringify({
           phone: e164,
-          name,
-          ...(email.trim() ? { email: email.trim() } : {}),
+          name: name.trim(),
+          email: email.trim(),
         }),
       });
       if (!res.ok) {
@@ -315,10 +331,26 @@ interface SqueezeCardProps {
 
 function SqueezeCard({ phone, setPhone, name, setName, email, setEmail, status, error, onSubmit }: SqueezeCardProps) {
   const [phoneTouched, setPhoneTouched] = useState(false);
+  const [nameTouched, setNameTouched] = useState(false);
+  const [emailTouched, setEmailTouched] = useState(false);
   const [consented, setConsented] = useState(false);
   const phoneCheck = normalizePhone(phone);
+  const nameValid = isValidName(name);
+  const emailValid = isValidEmail(email);
   const showPhoneError = phoneTouched && !phoneCheck.valid && phone.length > 0;
-  const submitDisabled = !phoneCheck.valid || !consented || status === "loading";
+  const showNameError = nameTouched && !nameValid && name.length > 0;
+  const showEmailError = emailTouched && !emailValid && email.length > 0;
+  // Every field must be complete and valid before consent can be given.
+  const fieldsComplete = nameValid && emailValid && phoneCheck.valid;
+  const submitDisabled = !fieldsComplete || !consented || status === "loading";
+
+  // If a field is edited back to an invalid state after consenting,
+  // revoke the consent tick so it can't be submitted out of order.
+  // (Render-phase state adjustment — see React docs "Adjusting state
+  // when a prop changes"; avoids an extra effect pass.)
+  if (!fieldsComplete && consented) {
+    setConsented(false);
+  }
 
   return (
     <div className="rounded-2xl bg-white text-ocean-deepest p-6 md:p-7 shadow-2xl shadow-black/30 border border-white/40">
@@ -348,11 +380,24 @@ function SqueezeCard({ phone, setPhone, name, setName, email, setEmail, status, 
             id="sq-name"
             type="text"
             autoComplete="given-name"
-            placeholder="Your first name (optional)"
+            placeholder="Your first name"
+            required
+            aria-invalid={showNameError}
+            aria-describedby={showNameError ? "sq-name-error" : undefined}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean transition-colors"
+            onBlur={() => setNameTouched(true)}
+            className={`w-full px-4 py-3 rounded-xl border text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-colors ${
+              showNameError
+                ? "border-red-400 focus:ring-red-400/30 focus:border-red-500"
+                : "border-gray-200 focus:ring-ocean/30 focus:border-ocean"
+            }`}
           />
+          {showNameError && (
+            <p id="sq-name-error" className="mt-1.5 text-xs text-red-600">
+              Please enter your first name
+            </p>
+          )}
         </div>
         <div>
           <label htmlFor="sq-phone" className="sr-only">Phone number</label>
@@ -386,25 +431,48 @@ function SqueezeCard({ phone, setPhone, name, setName, email, setEmail, status, 
             id="sq-email"
             type="email"
             autoComplete="email"
-            placeholder="Email (optional)"
+            placeholder="Email"
+            required
+            aria-invalid={showEmailError}
+            aria-describedby={showEmailError ? "sq-email-error" : undefined}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean/30 focus:border-ocean transition-colors"
+            onBlur={() => setEmailTouched(true)}
+            className={`w-full px-4 py-3 rounded-xl border text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-colors ${
+              showEmailError
+                ? "border-red-400 focus:ring-red-400/30 focus:border-red-500"
+                : "border-gray-200 focus:ring-ocean/30 focus:border-ocean"
+            }`}
           />
+          {showEmailError && (
+            <p id="sq-email-error" className="mt-1.5 text-xs text-red-600">
+              Please enter a valid email address
+            </p>
+          )}
         </div>
 
-        <label className="flex items-start gap-2.5 text-[11px] leading-relaxed text-gray-600 cursor-pointer">
+        <label
+          className={`flex items-start gap-2.5 text-[11px] leading-relaxed text-gray-600 ${
+            fieldsComplete ? "cursor-pointer" : "cursor-not-allowed opacity-60"
+          }`}
+        >
           <input
             type="checkbox"
             required
+            disabled={!fieldsComplete}
             checked={consented}
             onChange={(e) => setConsented(e.target.checked)}
-            className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-ocean focus:ring-2 focus:ring-ocean/30"
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-ocean focus:ring-2 focus:ring-ocean/30 disabled:cursor-not-allowed"
           />
           <span>
             I consent to La Vida Stem Cells contacting me by phone, text message, and email regarding my inquiry, appointment scheduling, and educational information. I understand that submitting this form does not establish a physician-patient relationship and is not a substitute for medical advice.
           </span>
         </label>
+        {!fieldsComplete && (
+          <p className="text-[11px] text-gray-400">
+            Please complete all fields above to enable consent.
+          </p>
+        )}
 
         {error && <p className="text-xs text-red-600">{error}</p>}
 

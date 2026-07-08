@@ -38,6 +38,10 @@ import { openAriana } from "@/lib/ariana";
 import { track, type PageSource } from "@/lib/track";
 import { normalizePhone } from "@/lib/phone";
 
+// Shared validation — all fields are mandatory before consent + submit.
+const isValidName = (v: string) => v.trim().length >= 2;
+const isValidEmail = (v: string) => /^\S+@\S+\.\S+$/.test(v.trim());
+
 interface QualificationPageProps {
   imageSrc: string;
   imageAlt: string;
@@ -79,10 +83,15 @@ export default function QualificationPage({
 
   async function submit(e: FormEvent) {
     e.preventDefault();
+    // All fields are mandatory — re-validate here even though the UI gates
+    // the consent checkbox + button, so a tampered client can't bypass it.
     if (
-      !name ||
+      !isValidName(name) ||
       !phone ||
-      !email ||
+      !isValidEmail(email) ||
+      !condition ||
+      !painLevel ||
+      !timeline ||
       !contactPreference
     ) {
       setError("Please complete all fields.");
@@ -420,9 +429,31 @@ function QualificationCard({
     "w-full px-4 py-3 rounded-xl border border-red-400 text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400/30 focus:border-red-500 transition-colors";
 
   const [phoneTouched, setPhoneTouched] = useState(false);
+  const [nameTouched, setNameTouched] = useState(false);
+  const [emailTouched, setEmailTouched] = useState(false);
   const [consented, setConsented] = useState(false);
   const phoneCheck = normalizePhone(phone);
+  const nameValid = isValidName(name);
+  const emailValid = isValidEmail(email);
   const showPhoneError = phoneTouched && !phoneCheck.valid && phone.length > 0;
+  const showNameError = nameTouched && !nameValid && name.length > 0;
+  const showEmailError = emailTouched && !emailValid && email.length > 0;
+  // Every field must be complete and valid before consent can be given.
+  const fieldsComplete =
+    nameValid &&
+    phoneCheck.valid &&
+    emailValid &&
+    !!condition &&
+    !!painLevel &&
+    !!timeline;
+
+  // If a field is edited back to an invalid state after consenting,
+  // revoke the consent tick so it can't be submitted out of order.
+  // (Render-phase state adjustment — see React docs "Adjusting state
+  // when a prop changes"; avoids an extra effect pass.)
+  if (!fieldsComplete && consented) {
+    setConsented(false);
+  }
 
   return (
     <div className="rounded-2xl bg-white text-ocean-deepest p-6 md:p-7 shadow-2xl shadow-black/30 border border-white/40">
@@ -445,10 +476,18 @@ function QualificationCard({
               autoComplete="name"
               placeholder="Your full name"
               required
+              aria-invalid={showNameError}
+              aria-describedby={showNameError ? "cn-name-error" : undefined}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className={inputClass}
+              onBlur={() => setNameTouched(true)}
+              className={showNameError ? inputClassError : inputClass}
             />
+            {showNameError && (
+              <p id="cn-name-error" className="mt-1.5 text-xs text-red-600">
+                Please enter your full name
+              </p>
+            )}
           </div>
           <div>
             <label htmlFor="cn-phone" className="sr-only">Phone number</label>
@@ -484,15 +523,24 @@ function QualificationCard({
               autoComplete="email"
               placeholder="Email"
               required
+              aria-invalid={showEmailError}
+              aria-describedby={showEmailError ? "cn-email-error" : undefined}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={inputClass}
+              onBlur={() => setEmailTouched(true)}
+              className={showEmailError ? inputClassError : inputClass}
             />
+            {showEmailError && (
+              <p id="cn-email-error" className="mt-1.5 text-xs text-red-600">
+                Please enter a valid email address
+              </p>
+            )}
           </div>
           <div>
             <label htmlFor="cn-condition" className="sr-only">Condition Category</label>
             <select
               id="cn-condition"
+              required
               value={condition}
               onChange={(e) => setCondition(e.target.value)}
               className={inputClass}
@@ -512,6 +560,7 @@ function QualificationCard({
             <label htmlFor="cn-pain" className="sr-only">Pain level</label>
             <select
               id="cn-pain"
+              required
               value={painLevel}
               onChange={(e) => setPainLevel(e.target.value)}
               className={inputClass}
@@ -528,6 +577,7 @@ function QualificationCard({
             <label htmlFor="cn-timeline" className="sr-only">Ideal timeline For Treatment</label>
             <select
               id="cn-timeline"
+              required
               value={timeline}
               onChange={(e) => setTimeline(e.target.value)}
               className={inputClass}
@@ -541,24 +591,34 @@ function QualificationCard({
           </div>
         </div>
 
-        <label className="flex items-start gap-2.5 text-[11px] leading-relaxed text-gray-600 cursor-pointer">
+        <label
+          className={`flex items-start gap-2.5 text-[11px] leading-relaxed text-gray-600 ${
+            fieldsComplete ? "cursor-pointer" : "cursor-not-allowed opacity-60"
+          }`}
+        >
           <input
             type="checkbox"
             required
+            disabled={!fieldsComplete}
             checked={consented}
             onChange={(e) => setConsented(e.target.checked)}
-            className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-ocean focus:ring-2 focus:ring-ocean/30"
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-ocean focus:ring-2 focus:ring-ocean/30 disabled:cursor-not-allowed"
           />
           <span>
             I consent to La Vida Stem Cells contacting me by phone, text message, and email regarding my inquiry, appointment scheduling, and educational information. I understand that submitting this form does not establish a physician-patient relationship and is not a substitute for medical advice.
           </span>
         </label>
+        {!fieldsComplete && (
+          <p className="text-[11px] text-gray-400">
+            Please complete all fields above to enable consent.
+          </p>
+        )}
 
         {error && <p className="text-xs text-red-600">{error}</p>}
 
         <motion.button
           type="submit"
-          disabled={status === "loading" || !consented}
+          disabled={status === "loading" || !fieldsComplete || !consented}
           whileHover={status !== "loading" ? { scale: 1.01, y: -1 } : undefined}
           whileTap={status !== "loading" ? { scale: 0.99 } : undefined}
           transition={{ type: "spring", stiffness: 400, damping: 25 }}
