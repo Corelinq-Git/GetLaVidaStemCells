@@ -63,6 +63,58 @@
           .retell-powered-by { font-size: 10px !important; opacity: 0.4 !important; padding: 4px 0 !important; }
         `;
 
+
+        // Linkify plain-text URLs in chat messages so agents can share
+        // clickable links (Retell renders message text as plain text).
+        const URL_RE = /https?:\/\/[^\s<>"']+/g;
+
+        function linkify(scope) {
+          const walker = document.createTreeWalker(scope, NodeFilter.SHOW_TEXT, null);
+          const targets = [];
+          let node;
+          while ((node = walker.nextNode())) {
+            const p = node.parentElement;
+            if (!p || p.closest("a, textarea, input, style, script")) continue;
+            if (URL_RE.test(node.data)) targets.push(node);
+            URL_RE.lastIndex = 0;
+          }
+          targets.forEach(function (textNode) {
+            const text = textNode.data;
+            const frag = document.createDocumentFragment();
+            let last = 0;
+            let m;
+            URL_RE.lastIndex = 0;
+            while ((m = URL_RE.exec(text))) {
+              const url = m[0].replace(/[.,!?;:)\]]+$/, "");
+              frag.appendChild(document.createTextNode(text.slice(last, m.index)));
+              const a = document.createElement("a");
+              a.href = url;
+              a.target = "_blank";
+              a.rel = "noopener noreferrer";
+              a.textContent = url;
+              frag.appendChild(a);
+              last = m.index + url.length;
+            }
+            frag.appendChild(document.createTextNode(text.slice(last)));
+            textNode.parentNode.replaceChild(frag, textNode);
+          });
+        }
+
+        function watchAndLinkify(root) {
+          let timer = null;
+          const schedule = function () {
+            if (timer) clearTimeout(timer);
+            // Debounce so we don't split URLs that are still streaming in.
+            timer = setTimeout(function () { linkify(root); }, 400);
+          };
+          new MutationObserver(schedule).observe(root, {
+            childList: true,
+            subtree: true,
+            characterData: true,
+          });
+          schedule();
+        }
+
         const start = Date.now();
         const tick = setInterval(function () {
           const host = Array.from(document.body.querySelectorAll("div"))
@@ -73,6 +125,7 @@
             const style = document.createElement("style");
             style.textContent = SHADOW_CSS;
             host.shadowRoot.appendChild(style);
+            watchAndLinkify(host.shadowRoot);
             clearInterval(tick);
           } else if (Date.now() - start > 10000) {
             clearInterval(tick);
