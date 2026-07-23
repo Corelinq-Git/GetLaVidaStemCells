@@ -635,6 +635,18 @@ function QualificationCard({
           </span>
         </motion.button>
 
+        {/* Note to clients — encourage speaking with Ariana first */}
+        <div className="rounded-xl bg-seafoam/10 border border-seafoam/40 px-4 py-3 text-xs text-gray-600 leading-relaxed">
+          <p className="font-semibold text-ocean-deepest mb-1">Dear Client,</p>
+          <p>
+            Ariana has been trained over hundreds of hours and has extensive
+            knowledge of every treatment and procedure we offer. She can answer
+            detailed questions clearly, thoroughly, and with sensitivity.
+            Please take a few minutes to speak with her first, then schedule a
+            consultation for pricing, eligibility, or any remaining questions.
+          </p>
+        </div>
+
         <p className="text-[11px] text-gray-500 text-center leading-relaxed">
           We dial within 60 seconds. No Spam. No Obligation. Cancel anytime.
         </p>
