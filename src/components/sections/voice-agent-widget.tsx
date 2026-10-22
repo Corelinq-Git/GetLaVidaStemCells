@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Phone,
@@ -24,8 +25,12 @@ type WidgetView =
   | "calling"
   | "callback"
   | "callback-sent";
-
+const AUTO_OPEN_PATHS = ["/", "/qualify", "/consultation", "/la-vida-stem-cells"];
+const AUTO_OPEN_DELAY_MS = 3000;
+const AUTO_OPEN_MIN_WIDTH = 481;
+const AUTO_OPEN_STORAGE_KEY = "ariana:auto-opened";
 export default function VoiceAgentWidget() {
+  const pathname = usePathname();  
   const [view, setView] = useState<WidgetView>("closed");
   const [callStatus, setCallStatus] = useState<"connecting" | "active" | "ended">("connecting");
   const [isMuted, setIsMuted] = useState(false);
@@ -89,6 +94,27 @@ export default function VoiceAgentWidget() {
       }
     };
   }, []);
+  useEffect(() => {
+    if (!AUTO_OPEN_PATHS.includes(pathname)) return;
+    if (window.innerWidth < AUTO_OPEN_MIN_WIDTH) return;
+    try {
+      if (sessionStorage.getItem(AUTO_OPEN_STORAGE_KEY)) return;
+    } catch {
+      // storage blocked: open once for this page view
+    }
+    const timer = setTimeout(() => {
+      setView((current) => {
+        if (current !== "closed") return current;
+        try {
+          sessionStorage.setItem(AUTO_OPEN_STORAGE_KEY, "1");
+        } catch {
+          // ignore
+        }
+        return "menu";
+      });
+    }, AUTO_OPEN_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [pathname]);
 
   // Global event listener so any element on the page can call
   // openAriana("menu" | "chat" | "calling" | "callback") to open the widget.
@@ -270,7 +296,7 @@ export default function VoiceAgentWidget() {
             {view === "menu" && (
               <div className="p-5 space-y-3">
                 <p className="text-sm text-gray-600 mb-4">
-                  Hi! I&apos;m Ariana. I can answer questions about our stem cell treatments, pricing, and process.
+                  Hi, I&apos;m Ariana! You can speak to me or chat.  I can answer questions about our stem cell treatments, pricing, and process.
                 </p>
 
                 <button
