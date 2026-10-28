@@ -296,7 +296,7 @@ export default function VoiceAgentWidget() {
             {view === "menu" && (
               <div className="p-5 space-y-3">
                 <p className="text-sm text-gray-600 mb-4">
-                  Hi, I&apos;m Ariana! You can speak to me or chat.  I can answer questions about our stem cell treatments, pricing, and process.
+                  Hi, this is Ariana 😊, your La Vida Virtual Assistant. Thanks for visiting La Vida Stem Cells. Before we get started, I&apos;d like to gather a few details so we can stay connected and better assist you throughout your healthcare journey.
                 </p>
 
                 <button
